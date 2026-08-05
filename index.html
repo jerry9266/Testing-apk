@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mobile App Frame</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Initialize theme immediately to prevent flashing on reload -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+
     <style>
-        /* --- Design System & Variables --- */
+        /* --- Design System & Variables (Light & Dark) --- */
         :root {
+            /* Light Mode Default */
             --primary-color: #111111;
             --accent-color: #3b28cc;
             --text-main: #111111;
@@ -16,14 +23,35 @@
             --text-light: #999999;
             --bg-main: #ffffff;
             --bg-secondary: #f2f3f5;
+            --bg-app: #f9f9fc; /* Used for settings background */
+            --bg-card: #ffffff;
             --bg-skeleton: #e5e7eb;
             --border-color: #eeeeee;
+            --icon-circle-bg: #f2f4fb;
+            --icon-circle-color: #35364a;
+            
             --nav-height: 60px;
             --header-height: 56px;
             --safe-area-bottom: env(safe-area-inset-bottom, 20px);
             --safe-area-top: env(safe-area-inset-top, 0px);
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Mode Overrides */
+            --primary-color: #ffffff;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a5;
+            --text-light: #777777;
+            --bg-main: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-app: #000000;
+            --bg-card: #1c1c1e;
+            --bg-skeleton: #2c2c2e;
+            --border-color: #2a2a2c;
+            --icon-circle-bg: #2c2c35;
+            --icon-circle-color: #d1d1f0;
         }
 
         /* --- Base & Reset --- */
@@ -41,6 +69,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
         }
 
         #app {
@@ -50,6 +79,7 @@
             display: flex;
             flex-direction: column;
             background: var(--bg-main);
+            transition: background-color var(--transition-speed);
         }
 
         /* --- Page Container --- */
@@ -71,7 +101,7 @@
             opacity: 0;
             visibility: hidden;
             transform: translateY(10px);
-            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease, visibility var(--transition-speed);
+            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease, visibility var(--transition-speed), background-color var(--transition-speed);
             display: flex;
             flex-direction: column;
         }
@@ -92,648 +122,422 @@
             padding: 0 16px;
             flex-shrink: 0;
             border-bottom: 1px solid transparent;
+            transition: border-color var(--transition-speed);
         }
 
-        #page-home .header {
-            border-bottom: 1px solid var(--border-color);
-        }
+        #page-home .header { border-bottom: 1px solid var(--border-color); }
 
-        .header-title {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .header-icon {
-            font-size: 18px;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
-        .home-header-left, .home-header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        .header-title { font-size: 18px; font-weight: 700; }
+        .header-icon { font-size: 18px; color: var(--text-main); cursor: pointer; transition: color var(--transition-speed); }
+        .home-header-left, .home-header-right { display: flex; align-items: center; gap: 16px; }
         
-        .notification-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
+        .notification-wrapper { position: relative; display: flex; align-items: center; }
         .notification-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            background-color: #ff3b30;
-            border-radius: 50%;
-            border: 1.5px solid var(--bg-main);
+            position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
+            background-color: #ff3b30; border-radius: 50%; border: 1.5px solid var(--bg-main);
+            transition: border-color var(--transition-speed);
         }
 
         /* --- Generic Offline Component --- */
         .offline-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 0 30px;
-            text-align: center;
-            z-index: 5;
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 0 30px; text-align: center; z-index: 5;
             animation: fadeIn 0.4s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
         .wifi-icon-wrapper {
-            width: 90px;
-            height: 90px;
-            background-color: var(--bg-secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            margin-bottom: 16px;
+            width: 90px; height: 90px; background-color: var(--bg-secondary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative; margin-bottom: 16px; transition: background-color var(--transition-speed);
         }
 
-        .wifi-icon-wrapper .fa-wifi {
-            font-size: 40px;
-            color: #999;
-        }
-
+        .wifi-icon-wrapper .fa-wifi { font-size: 40px; color: #999; }
         .wifi-badge {
-            position: absolute;
-            bottom: 16px;
-            right: 14px;
-            background: #999;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid var(--bg-secondary);
-            font-size: 11px;
+            position: absolute; bottom: 16px; right: 14px; background: #999;
+            color: white; border-radius: 50%; width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            border: 3px solid var(--bg-secondary); font-size: 11px;
+            transition: border-color var(--transition-speed);
         }
 
-        .offline-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .offline-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
+        .offline-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .offline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; transition: color var(--transition-speed); }
 
         .btn-reload {
-            background-color: #1a1a24;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.1s;
+            background-color: var(--primary-color); color: var(--bg-main);
+            border: none; border-radius: 20px; padding: 10px 24px; font-size: 14px;
+            font-weight: 600; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; transition: transform 0.1s, background-color var(--transition-speed), color var(--transition-speed);
         }
+        .btn-reload:active { transform: scale(0.96); }
 
-        .btn-reload:active {
-            transform: scale(0.96);
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .btn-reload.loading .reload-text {
-            display: none;
-        }
-
-        .btn-reload.loading .fa-arrow-rotate-right {
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .btn-reload.loading .reload-text { display: none; }
+        .btn-reload.loading .fa-arrow-rotate-right { animation: spin 1s linear infinite; margin: 0 auto; }
 
         /* --- Discover Page Specifics --- */
         .categories-scroll {
-            width: 100%;
-            overflow-x: auto;
-            padding: 10px 16px;
-            display: flex;
-            gap: 8px;
-            scrollbar-width: none; 
-            flex-shrink: 0;
+            width: 100%; overflow-x: auto; padding: 10px 16px; display: flex; gap: 8px;
+            scrollbar-width: none; flex-shrink: 0;
         }
         .categories-scroll::-webkit-scrollbar { display: none; }
 
         .category-pill {
-            padding: 6px 14px;
-            border-radius: 16px;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
+            padding: 6px 14px; border-radius: 16px; background-color: var(--bg-main);
+            color: var(--text-main); font-size: 13px; font-weight: 500; white-space: nowrap;
+            border: 1px solid var(--border-color); cursor: pointer;
             transition: background-color 0.2s, color 0.2s, border-color 0.2s;
         }
-
-        .category-pill.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-        
-        .category-pill.icon-only {
-            padding: 6px 10px;
-        }
+        .category-pill.active { background-color: var(--primary-color); color: var(--bg-main); border-color: var(--primary-color); }
+        .category-pill.icon-only { padding: 6px 10px; }
 
         /* --- Skeletons Components --- */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-
-        .skeleton-list {
-            width: 100%;
-            padding: 10px 16px;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Specific to chat overlay */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .skeleton-list { width: 100%; padding: 10px 16px; pointer-events: none; z-index: 1; }
         #page-chat .skeleton-list {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: absolute; top: 0; left: 0;
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
         }
-
-        .skeleton-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
+        .skeleton-item { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .skel-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background-color: var(--bg-skeleton);
-            animation: pulse 1.5s infinite ease-in-out;
+            width: 44px; height: 44px; border-radius: 50%; background-color: var(--bg-skeleton);
+            animation: pulse 1.5s infinite ease-in-out; transition: background-color var(--transition-speed);
         }
-
-        .skel-lines {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        .skel-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .skel-line {
-            height: 10px;
-            background-color: var(--bg-skeleton);
-            border-radius: 5px;
-            animation: pulse 1.5s infinite ease-in-out;
+            height: 10px; background-color: var(--bg-skeleton); border-radius: 5px;
+            animation: pulse 1.5s infinite ease-in-out; transition: background-color var(--transition-speed);
         }
         .skel-line.short { width: 45%; animation-delay: 0.2s; }
         .skel-line.long { width: 85%; }
         .skel-line.badge { width: 20px; margin-left: auto; animation-delay: 0.4s; }
 
         /* --- Chat Page Specifics --- */
-        .search-bar-container {
-            padding: 0 16px 12px 16px;
-            flex-shrink: 0;
-        }
-
+        .search-bar-container { padding: 0 16px 12px 16px; flex-shrink: 0; }
         .search-bar {
-            background-color: var(--bg-secondary);
-            border-radius: 8px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 14px;
-            cursor: pointer;
+            background-color: var(--bg-secondary); border-radius: 8px; padding: 8px 12px;
+            display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px;
+            cursor: pointer; transition: background-color var(--transition-speed), color var(--transition-speed);
         }
-
-        .chat-content-area {
-            position: relative;
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-        }
-
-        #page-chat .offline-container {
-            z-index: 5;
-        }
+        .chat-content-area { position: relative; flex: 1; overflow: hidden; display: flex; }
 
         /* --- Profile Page Specifics --- */
-        .profile-user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 10px 16px 20px 16px;
-            flex-shrink: 0;
-        }
-
+        .profile-user-info { display: flex; align-items: center; gap: 16px; padding: 10px 16px 20px 16px; flex-shrink: 0; }
         .profile-avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background-color: var(--bg-skeleton);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 32px;
+            width: 64px; height: 64px; border-radius: 50%; background-color: var(--bg-skeleton);
+            display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 32px;
+            transition: background-color var(--transition-speed);
         }
-
-        .profile-details h2 {
-            font-size: 18px;
-            margin-bottom: 2px;
-            font-weight: 700;
-        }
-
-        .profile-details p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
+        .profile-details h2 { font-size: 18px; margin-bottom: 2px; font-weight: 700; }
+        .profile-details p { color: var(--text-muted); font-size: 14px; transition: color var(--transition-speed); }
 
         /* --- Bottom Navigation --- */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: calc(var(--nav-height) + var(--safe-area-bottom));
-            background-color: var(--bg-main);
-            display: flex;
-            justify-content: space-around;
-            align-items: stretch;
-            padding-bottom: var(--safe-area-bottom);
-            border-top: 1px solid var(--border-color);
-            z-index: 100;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: calc(var(--nav-height) + var(--safe-area-bottom));
+            background-color: var(--bg-main); display: flex; justify-content: space-around; align-items: stretch;
+            padding-bottom: var(--safe-area-bottom); border-top: 1px solid var(--border-color); z-index: 100;
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
         }
-
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: var(--text-muted);
-            text-decoration: none;
-            flex: 1;
-            font-size: 10px;
-            font-weight: 500;
-            transition: color 0.2s;
-            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+            color: var(--text-muted); text-decoration: none; flex: 1; font-size: 10px; font-weight: 500;
+            transition: color 0.2s; position: relative;
         }
-
-        .nav-item i {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-
-        .nav-item.active {
-            color: var(--text-main);
-        }
-
+        .nav-item i { font-size: 20px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--text-main); }
         .nav-item::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 32px;
-            height: 3px;
-            background-color: var(--accent-color);
-            border-radius: 0 0 3px 3px;
-            opacity: 0;
-            transition: opacity 0.2s;
+            content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 32px; height: 3px;
+            background-color: var(--accent-color); border-radius: 0 0 3px 3px; opacity: 0; transition: opacity 0.2s;
         }
+        .nav-item.active::before { opacity: 1; }
 
-        .nav-item.active::before {
-            opacity: 1;
-        }
-
-        /* --- Upload Panel --- */
-        .upload-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
+        /* --- Overlays (Dim Backgrounds) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); opacity: 0; visibility: hidden;
             transition: opacity var(--transition-speed) ease, visibility var(--transition-speed);
         }
+        
+        .upload-overlay { z-index: 200; }
+        .sidebar-overlay { z-index: 400; }
+        .language-overlay { z-index: 600; }
+        .signout-overlay { z-index: 700; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
-        .upload-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            min-height: 40%;
-            background-color: var(--bg-main);
-            border-radius: 24px 24px 0 0;
-            z-index: 201;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            flex-direction: column;
-            padding-bottom: var(--safe-area-bottom);
+        /* --- Panels & Bottom Sheets --- */
+        .bottom-sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: auto;
+            background-color: var(--bg-main); border-radius: 24px 24px 0 0;
+            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color var(--transition-speed);
+            display: flex; flex-direction: column; padding-bottom: var(--safe-area-bottom);
         }
 
-        .upload-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .upload-panel { z-index: 201; min-height: 40%; }
+        .language-panel { z-index: 601; max-height: 80vh; }
+        
+        .bottom-sheet.active { transform: translateY(0); }
 
-        .upload-panel.active {
-            transform: translateY(0);
+        .sheet-header {
+            padding: 24px; display: flex; align-items: center; position: relative;
+            border-bottom: 1px solid transparent; transition: border-color var(--transition-speed);
         }
+        .language-panel .sheet-header { border-bottom: 1px solid var(--border-color); }
 
-        .upload-header {
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
+        .close-sheet-btn { font-size: 20px; color: var(--text-main); cursor: pointer; position: absolute; left: 24px; transition: color var(--transition-speed); }
+        .sheet-title { width: 100%; text-align: center; font-size: 18px; font-weight: 700; }
 
-        .close-upload-btn {
-            font-size: 20px;
-            color: var(--text-main);
-            cursor: pointer;
-            position: absolute;
-            left: 24px;
-        }
-
-        .upload-title {
-            width: 100%;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .upload-options-grid {
-            padding: 10px 24px 30px 24px;
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-        }
-
-        .upload-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-
+        .upload-options-grid { padding: 10px 24px 30px 24px; display: flex; justify-content: center; gap: 24px; }
+        .upload-option { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; }
         .upload-option-icon {
-            width: 70px;
-            height: 70px;
-            background-color: var(--bg-secondary);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: var(--text-main);
-            transition: background 0.2s;
+            width: 70px; height: 70px; background-color: var(--bg-secondary); border-radius: 20px;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            color: var(--text-main); transition: background-color var(--transition-speed), color var(--transition-speed);
         }
-        
-        .upload-option:active .upload-option-icon {
-            background-color: var(--bg-skeleton);
-        }
+        .upload-option:active .upload-option-icon { background-color: var(--bg-skeleton); }
+        .upload-option span { font-size: 13px; font-weight: 600; }
 
-        .upload-option span {
-            font-size: 13px;
-            font-weight: 600;
+        /* --- Sidebar Drawer (Menu) --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 80vw; max-width: 320px; height: 100vh;
+            background-color: var(--bg-main); z-index: 401; transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color var(--transition-speed);
+            display: flex; flex-direction: column; box-shadow: 2px 0 12px rgba(0,0,0,0.1);
         }
-
-        /* --- Global Search Flow Container --- */
-        .search-flow-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--bg-main);
-            z-index: 300;
-            transform: translateX(100%);
-            transition: transform var(--transition-speed) ease;
-            display: flex;
-            flex-direction: column;
+        .sidebar.active { transform: translateX(0); }
+        .sidebar-header {
+            padding: calc(24px + var(--safe-area-top)) 24px 24px 24px; display: flex; align-items: center;
+            justify-content: space-between; border-bottom: 1px solid var(--border-color);
+            transition: border-color var(--transition-speed);
         }
-
-        .search-flow-container.active {
-            transform: translateX(0);
+        .sidebar-header h2 { font-size: 20px; font-weight: 700; }
+        .close-sidebar-btn { font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 4px; transition: color var(--transition-speed); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 16px 0; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; }
+        .sidebar-menu li {
+            padding: 16px 24px; display: flex; align-items: center; gap: 16px; font-size: 15px;
+            font-weight: 500; color: var(--text-main); cursor: pointer; transition: background-color 0.2s, color var(--transition-speed);
         }
+        .sidebar-menu li:active { background-color: var(--bg-secondary); }
+        .sidebar-menu li i { font-size: 18px; color: var(--text-muted); width: 24px; text-align: center; transition: color var(--transition-speed); }
+        .sidebar-divider { height: 1px; background-color: var(--border-color); margin: 12px 24px; transition: background-color var(--transition-speed); }
 
+        /* --- Full Page Modals (Search, Settings, Theme) --- */
+        .full-page-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-main); z-index: 300; transform: translateX(100%);
+            transition: transform var(--transition-speed) ease, background-color var(--transition-speed);
+            display: flex; flex-direction: column;
+        }
+        .full-page-container.active { transform: translateX(0); }
+
+        /* Search Styles */
+        #search-flow { z-index: 300; }
         .search-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-main);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex;
+            flex-direction: column; opacity: 0; visibility: hidden; transition: opacity 0.2s;
         }
-
-        .search-view.active {
-            opacity: 1;
-            visibility: visible;
-            z-index: 10;
-        }
-
-        .search-view-header {
-            display: flex;
-            align-items: center;
-            padding: 10px 16px;
-            gap: 16px;
-            padding-top: calc(10px + var(--safe-area-top));
-        }
-        
-        #view-search-results .search-view-header {
-            justify-content: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
-        }
-
-        .search-back-btn {
-            font-size: 20px;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
+        .search-view.active { opacity: 1; visibility: visible; z-index: 10; }
+        .search-view-header { display: flex; align-items: center; padding: 10px 16px; gap: 16px; padding-top: calc(10px + var(--safe-area-top)); }
+        #view-search-results .search-view-header { justify-content: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
+        .back-arrow-btn { font-size: 20px; color: var(--text-main); cursor: pointer; transition: color var(--transition-speed); }
         .input-pill {
-            flex: 1;
-            background-color: var(--bg-secondary);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            padding: 10px 16px;
-            gap: 12px;
+            flex: 1; background-color: var(--bg-secondary); border-radius: 20px; display: flex;
+            align-items: center; padding: 10px 16px; gap: 12px; transition: background-color var(--transition-speed);
         }
-
-        .input-pill.results-pill {
-            padding: 12px 16px;
-            cursor: pointer; 
-        }
-
-        .input-pill input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 15px;
-            color: var(--text-main);
-            font-family: inherit;
-        }
-        
-        .input-pill input::placeholder {
-            color: var(--text-light);
-        }
-
-        .input-pill .fa-magnifying-glass {
-            color: var(--text-main);
-            font-size: 16px;
-        }
-        
-        .input-pill.results-pill .fa-magnifying-glass {
-            color: var(--text-light);
-        }
-
-        .search-query-display {
-            flex: 1;
-            font-size: 15px;
-            color: var(--text-main);
-        }
-
+        .input-pill.results-pill { padding: 12px 16px; cursor: pointer; }
+        .input-pill input { flex: 1; border: none; background: transparent; outline: none; font-size: 15px; color: var(--text-main); font-family: inherit; }
+        .input-pill input::placeholder { color: var(--text-light); }
+        .input-pill .fa-magnifying-glass { color: var(--text-main); font-size: 16px; transition: color var(--transition-speed); }
+        .input-pill.results-pill .fa-magnifying-glass { color: var(--text-light); }
+        .search-query-display { flex: 1; font-size: 15px; color: var(--text-main); }
         .clear-search-btn {
-            color: var(--text-light);
-            background: #e2e3e7;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            cursor: pointer;
+            color: var(--text-light); background: var(--bg-skeleton); border-radius: 50%; width: 18px; height: 18px;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: background-color var(--transition-speed);
         }
-
-        .search-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 20px;
-        }
-
-        .search-section {
-            margin-top: 24px;
-            margin-bottom: 30px;
-        }
-
-        .search-section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .search-section-title {
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .clear-all-text {
-            color: var(--text-muted);
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .search-list {
-            list-style: none;
-        }
-
-        .search-list li {
-            display: flex;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-
-        .search-list li:last-child {
-            border-bottom: none;
-        }
-
+        .search-body { flex: 1; overflow-y: auto; padding: 0 20px; }
+        .search-section { margin-top: 24px; margin-bottom: 30px; }
+        .search-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .search-section-title { font-weight: 700; font-size: 15px; }
+        .clear-all-text { color: var(--text-muted); font-size: 13px; cursor: pointer; transition: color var(--transition-speed); }
+        .search-list { list-style: none; }
+        .search-list li { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: border-color var(--transition-speed); }
+        .search-list li:last-child { border-bottom: none; }
         .list-icon-bg {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--bg-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 16px;
-            color: var(--text-muted);
-            font-size: 14px;
+            width: 32px; height: 32px; border-radius: 50%; background-color: var(--bg-secondary);
+            display: flex; align-items: center; justify-content: center; margin-right: 16px;
+            color: var(--text-muted); font-size: 14px; transition: background-color var(--transition-speed), color var(--transition-speed);
         }
+        .list-text { flex: 1; font-size: 15px; color: var(--text-main); transition: color var(--transition-speed); }
+        .list-action-icon { color: var(--text-light); font-size: 14px; transition: color var(--transition-speed); }
+        .angled-arrow { transform: rotate(-45deg); }
+        .search-results-content { position: relative; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
-        .list-text {
-            flex: 1;
-            font-size: 15px;
-            color: var(--text-main);
+        /* --- Settings Interface Specifics --- */
+        #settings-flow { z-index: 500; background-color: var(--bg-app); }
+        #settings-flow .search-view-header, #theme-flow .search-view-header { 
+            background-color: var(--bg-main); justify-content: space-between; 
+            padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
         }
+        .settings-header-title { font-size: 18px; font-weight: 700; }
+        
+        .settings-body { flex: 1; overflow-y: auto; padding: 20px 16px; padding-bottom: calc(var(--safe-area-bottom) + 40px); }
+        .settings-group { margin-bottom: 24px; }
+        .settings-group-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-bottom: 12px; margin-left: 8px; letter-spacing: 0.5px; transition: color var(--transition-speed); }
+        
+        .settings-card {
+            background-color: var(--bg-card); border-radius: 16px; padding: 0 16px;
+            border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+        }
+        
+        .settings-item { display: flex; align-items: center; padding: 16px 0; cursor: pointer; }
+        .settings-item.no-action { cursor: default; }
+        .settings-divider { height: 1px; background-color: var(--border-color); width: 100%; transition: background-color var(--transition-speed); }
+        
+        .settings-icon-wrapper {
+            width: 36px; height: 36px; border-radius: 50%; background-color: var(--icon-circle-bg);
+            display: flex; align-items: center; justify-content: center; margin-right: 16px;
+            color: var(--icon-circle-color); font-size: 16px; transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        
+        .settings-text-wrapper { flex: 1; }
+        .settings-title { font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; transition: color var(--transition-speed); }
+        .settings-subtitle { font-size: 13px; color: var(--text-light); transition: color var(--transition-speed); }
+        
+        .settings-action { display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 14px; transition: color var(--transition-speed); }
+        .settings-action i { font-size: 14px; }
+        
+        .btn-signout-main {
+            width: 100%; background-color: #d32f2f; color: white; border: none; border-radius: 20px;
+            padding: 16px; font-size: 16px; font-weight: 600; display: flex; align-items: center;
+            justify-content: center; gap: 10px; cursor: pointer; transition: transform 0.1s;
+        }
+        .btn-signout-main:active { transform: scale(0.98); }
 
-        .list-action-icon {
-            color: var(--text-light);
-            font-size: 14px;
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative; width: 46px; height: 26px; appearance: none;
+            background: var(--bg-skeleton); border-radius: 13px; outline: none; cursor: pointer;
+            transition: background 0.3s; margin: 0;
         }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px;
+            background: white; border-radius: 50%; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .toggle-switch:checked { background: var(--primary-color); }
+        .toggle-switch:checked::after { transform: translateX(20px); background: var(--bg-main); }
 
-        .angled-arrow {
-            transform: rotate(-45deg);
+        /* --- Language Bottom Sheet Specifics --- */
+        .language-list { overflow-y: auto; padding: 0 24px; display: flex; flex-direction: column; }
+        .lang-item {
+            padding: 16px 0; border-bottom: 1px solid var(--border-color); display: flex;
+            align-items: center; justify-content: space-between; font-size: 15px; color: var(--text-main);
+            cursor: pointer; transition: border-color var(--transition-speed), color var(--transition-speed);
         }
+        .lang-item:last-child { border-bottom: none; }
+        .lang-item .fa-check { color: var(--primary-color); opacity: 0; transition: opacity 0.2s; }
+        .lang-item.selected { font-weight: 600; }
+        .lang-item.selected .fa-check { opacity: 1; }
 
-        /* --- Search Results specific styling --- */
-        .search-results-content {
-            position: relative;
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        /* --- Sign Out Modal Specifics --- */
+        .modal-box {
+            background-color: var(--bg-main); border-radius: 20px; padding: 24px; width: 85%;
+            max-width: 340px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: scale(0.95); transition: transform var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1), background-color var(--transition-speed);
         }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--text-main); transition: color var(--transition-speed); }
+        .modal-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.4; transition: color var(--transition-speed); }
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn {
+            flex: 1; padding: 14px 0; border-radius: 12px; font-size: 15px; font-weight: 600;
+            border: none; cursor: pointer; transition: background-color 0.2s;
+        }
+        .modal-btn-cancel { background-color: var(--bg-secondary); color: var(--text-main); transition: background-color var(--transition-speed), color var(--transition-speed); }
+        .modal-btn-cancel:active { background-color: var(--bg-skeleton); }
+        .modal-btn-danger { background-color: #d32f2f; color: white; }
+        .modal-btn-danger:active { background-color: #b71c1c; }
+
+        /* --- Theme Flow Specifics (New Page) --- */
+        #theme-flow { z-index: 550; background-color: var(--bg-app); }
+        #theme-flow .search-view-header { justify-content: center; position: relative; }
+        #theme-back-btn { position: absolute; left: 16px; padding: 10px; margin-left: -10px; }
+        .theme-body { flex: 1; overflow-y: auto; padding: 24px 16px; display: flex; flex-direction: column; }
+        
+        .theme-slider-container {
+            width: 100%; margin-bottom: 16px; overflow: hidden;
+            position: relative; border-radius: 12px;
+        }
+        .theme-slider-track {
+            display: flex; width: 300%; transition: transform 0.5s ease-in-out;
+        }
+        .theme-slide {
+            width: 33.333%; flex-shrink: 0; padding: 0;
+        }
+        
+        .ad-banner-inner {
+            background: #532c9e; border-radius: 12px; padding: 24px 20px;
+            position: relative; overflow: hidden; color: white; min-height: 200px;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .ad-badge {
+            position: absolute; top: 12px; right: 12px; border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 4px; padding: 2px 6px; font-size: 10px; z-index: 5;
+        }
+        .ad-tag {
+            background: #ffb800; color: black; font-size: 10px; font-weight: 800;
+            padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 12px;
+            z-index: 2; position: relative;
+        }
+        .ad-title {
+            font-size: 26px; font-weight: 900; line-height: 1.1; margin-bottom: 8px;
+            z-index: 2; position: relative; letter-spacing: -0.5px;
+        }
+        .ad-desc {
+            font-size: 12px; opacity: 0.9; margin-bottom: 16px; line-height: 1.4;
+            z-index: 2; position: relative; max-width: 60%;
+        }
+        .ad-btn {
+            background: black; color: white; border-radius: 4px; padding: 10px 18px;
+            font-size: 12px; font-weight: 700; width: fit-content; display: flex; align-items: center; gap: 8px;
+            z-index: 2; position: relative;
+        }
+        .ad-btn i { font-size: 10px; }
+        
+        .ad-graphic {
+            position: absolute; right: -40px; top: -10%; width: 240px; height: 240px;
+            background: linear-gradient(135deg, #ff7e5f 0%, #ffb703 100%); border-radius: 50%;
+            z-index: 1;
+        }
+        .ad-shoe-img {
+            position: absolute; right: 0px; top: 35px; width: 200px;
+            transform: rotate(-15deg) scaleX(-1); z-index: 3;
+            filter: drop-shadow(-5px 15px 10px rgba(0,0,0,0.5));
+        }
+        .ad-discount-badge {
+            position: absolute; right: 20px; bottom: 20px;
+            width: 70px; height: 70px; background: white; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #532c9e; z-index: 4; font-weight: 900; line-height: 1;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .ad-discount-badge span:first-child { font-size: 9px; color: black; margin-bottom: 2px; }
+        .ad-discount-badge span:nth-child(2) { font-size: 24px; margin-bottom: -2px; letter-spacing: -1px; }
+        .ad-discount-badge span:last-child { font-size: 11px; color: black; font-weight: 700; }
+        
+        .theme-dots {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 24px;
+        }
+        .theme-dot {
+            width: 8px; height: 8px; border-radius: 50%; background-color: var(--border-color);
+            transition: background-color 0.3s;
+        }
+        .theme-dot.active { background-color: var(--icon-circle-color); }
 
     </style>
 </head>
@@ -744,11 +548,11 @@
     <!-- ================= MAIN APP PAGES ================= -->
     <div class="pages-container">
         
-        <!-- ================= HOME PAGE ================= -->
+        <!-- HOME PAGE -->
         <div id="page-home" class="page active">
             <div class="header">
                 <div class="home-header-left">
-                    <i class="fa-solid fa-bars header-icon"></i>
+                    <i class="fa-solid fa-bars header-icon" id="open-sidebar-btn"></i>
                     <div class="header-title">Zoviento</div>
                 </div>
                 <div class="home-header-right">
@@ -761,20 +565,14 @@
             </div>
 
             <div class="offline-container">
-                <div class="wifi-icon-wrapper">
-                    <i class="fa-solid fa-wifi"></i>
-                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
-                </div>
+                <div class="wifi-icon-wrapper"><i class="fa-solid fa-wifi"></i><div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div></div>
                 <h2 class="offline-title">You're offline</h2>
                 <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
-                <button class="btn-reload">
-                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
-                    <span class="reload-text">Reload</span>
-                </button>
+                <button class="btn-reload"><i class="fa-solid fa-arrow-rotate-right reload-icon"></i><span class="reload-text">Reload</span></button>
             </div>
         </div>
 
-        <!-- ================= DISCOVER PAGE ================= -->
+        <!-- DISCOVER PAGE -->
         <div id="page-discover" class="page">
             <div class="header">
                 <div class="header-title">Discover</div>
@@ -792,20 +590,14 @@
             </div>
 
             <div class="offline-container">
-                <div class="wifi-icon-wrapper">
-                    <i class="fa-solid fa-wifi"></i>
-                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
-                </div>
+                <div class="wifi-icon-wrapper"><i class="fa-solid fa-wifi"></i><div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div></div>
                 <h2 class="offline-title">You're offline</h2>
                 <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
-                <button class="btn-reload" id="discover-reload-btn">
-                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
-                    <span class="reload-text">Reload</span>
-                </button>
+                <button class="btn-reload" id="discover-reload-btn"><i class="fa-solid fa-arrow-rotate-right reload-icon"></i><span class="reload-text">Reload</span></button>
             </div>
         </div>
 
-        <!-- ================= CHAT PAGE ================= -->
+        <!-- CHAT PAGE -->
         <div id="page-chat" class="page">
             <div class="header">
                 <div class="header-title">Chat</div>
@@ -825,29 +617,22 @@
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
-                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                 </div>
                 
                 <div class="offline-container">
-                    <div class="wifi-icon-wrapper">
-                        <i class="fa-solid fa-wifi"></i>
-                        <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
-                    </div>
+                    <div class="wifi-icon-wrapper"><i class="fa-solid fa-wifi"></i><div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div></div>
                     <h2 class="offline-title">You're offline</h2>
                     <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
-                    <button class="btn-reload">
-                        <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
-                        <span class="reload-text">Reload</span>
-                    </button>
+                    <button class="btn-reload"><i class="fa-solid fa-arrow-rotate-right reload-icon"></i><span class="reload-text">Reload</span></button>
                 </div>
             </div>
         </div>
 
-        <!-- ================= PROFILE PAGE ================= -->
+        <!-- PROFILE PAGE -->
         <div id="page-profile" class="page">
             <div class="header">
                 <div class="header-title">Profile</div>
-                <i class="fa-solid fa-gear header-icon"></i>
+                <i class="fa-solid fa-gear header-icon trigger-settings"></i>
             </div>
             
             <div class="profile-user-info">
@@ -859,16 +644,10 @@
             </div>
 
             <div class="offline-container">
-                <div class="wifi-icon-wrapper">
-                    <i class="fa-solid fa-wifi"></i>
-                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
-                </div>
+                <div class="wifi-icon-wrapper"><i class="fa-solid fa-wifi"></i><div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div></div>
                 <h2 class="offline-title">You're offline</h2>
                 <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
-                <button class="btn-reload">
-                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
-                    <span class="reload-text">Reload</span>
-                </button>
+                <button class="btn-reload"><i class="fa-solid fa-arrow-rotate-right reload-icon"></i><span class="reload-text">Reload</span></button>
             </div>
         </div>
 
@@ -876,131 +655,119 @@
 
     <!-- ================= BOTTOM NAVIGATION ================= -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" data-target="home">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </a>
-        <a href="#" class="nav-item" data-target="discover">
-            <i class="fa-regular fa-compass"></i>
-            <span>Discover</span>
-        </a>
-        <a href="#" class="nav-item" id="nav-btn-upload">
-            <i class="fa-solid fa-plus"></i>
-            <span>Upload</span>
-        </a>
-        <a href="#" class="nav-item" data-target="chat">
-            <i class="fa-regular fa-comment-dots"></i>
-            <span>Chat</span>
-        </a>
-        <a href="#" class="nav-item" data-target="profile">
-            <i class="fa-regular fa-user"></i>
-            <span>Profile</span>
-        </a>
+        <a href="#" class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="#" class="nav-item" data-target="discover"><i class="fa-regular fa-compass"></i><span>Discover</span></a>
+        <a href="#" class="nav-item" id="nav-btn-upload"><i class="fa-solid fa-plus"></i><span>Upload</span></a>
+        <a href="#" class="nav-item" data-target="chat"><i class="fa-regular fa-comment-dots"></i><span>Chat</span></a>
+        <a href="#" class="nav-item" data-target="profile"><i class="fa-regular fa-user"></i><span>Profile</span></a>
     </nav>
 
+    <!-- ================= SIDEBAR MENU (DRAWER) ================= -->
+    <div class="modal-overlay sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <i class="fa-solid fa-xmark close-sidebar-btn" id="close-sidebar-btn"></i>
+        </div>
+        <div class="sidebar-content">
+            <ul class="sidebar-menu">
+                <li><i class="fa-solid fa-arrow-up-from-bracket"></i> <span>My Uploads</span></li>
+                <li><i class="fa-solid fa-book-open"></i> <span>Reading History</span></li>
+                <li><i class="fa-solid fa-download"></i> <span>Downloads</span></li>
+            </ul>
+            <div class="sidebar-divider"></div>
+            <ul class="sidebar-menu">
+                <li id="sidebar-theme-btn"><i class="fa-solid fa-palette"></i> <span>Theme</span></li>
+                <li class="trigger-settings"><i class="fa-solid fa-gear"></i> <span>Settings</span></li>
+                <li><i class="fa-regular fa-circle-question"></i> <span>Help & Support</span></li>
+            </ul>
+            <div class="sidebar-divider"></div>
+            <ul class="sidebar-menu">
+                <li><i class="fa-solid fa-scroll"></i> <span>Privacy Policy</span></li>
+                <li><i class="fa-solid fa-file-contract"></i> <span>Terms of Use</span></li>
+                <li><i class="fa-solid fa-circle-info"></i> <span>About</span></li>
+            </ul>
+        </div>
+    </div>
+
     <!-- ================= UPLOAD PANEL ================= -->
-    <div class="upload-overlay" id="upload-overlay"></div>
-    <div class="upload-panel" id="upload-panel">
-        <div class="upload-header">
-            <i class="fa-solid fa-xmark close-upload-btn" id="close-upload-btn"></i>
-            <div class="upload-title">Start creating now</div>
+    <div class="modal-overlay upload-overlay" id="upload-overlay"></div>
+    <div class="bottom-sheet upload-panel" id="upload-panel">
+        <div class="sheet-header">
+            <i class="fa-solid fa-xmark close-sheet-btn" id="close-upload-btn"></i>
+            <div class="sheet-title">Start creating now</div>
         </div>
         <div class="upload-options-grid">
-            <div class="upload-option">
-                <div class="upload-option-icon"><i class="fa-solid fa-thumbtack"></i></div>
-                <span>Pin</span>
-            </div>
-            <div class="upload-option">
-                <div class="upload-option-icon"><i class="fa-solid fa-scissors"></i></div>
-                <span>Collage</span>
-            </div>
-            <div class="upload-option">
-                <div class="upload-option-icon"><i class="fa-solid fa-table-columns"></i></div>
-                <span>Board</span>
+            <div class="upload-option"><div class="upload-option-icon"><i class="fa-solid fa-thumbtack"></i></div><span>Pin</span></div>
+            <div class="upload-option"><div class="upload-option-icon"><i class="fa-solid fa-scissors"></i></div><span>Collage</span></div>
+            <div class="upload-option"><div class="upload-option-icon"><i class="fa-solid fa-table-columns"></i></div><span>Board</span></div>
+        </div>
+    </div>
+
+    <!-- ================= LANGUAGE PANEL ================= -->
+    <div class="modal-overlay language-overlay" id="language-overlay"></div>
+    <div class="bottom-sheet language-panel" id="language-panel">
+        <div class="sheet-header">
+            <i class="fa-solid fa-xmark close-sheet-btn" id="close-lang-btn"></i>
+            <div class="sheet-title">Select Language</div>
+        </div>
+        <div class="language-list">
+            <!-- Populated securely to ensure scrolling -->
+            <div class="lang-item selected" data-lang="English"><span>English</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Español"><span>Español</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Français"><span>Français</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Deutsch"><span>Deutsch</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Italiano"><span>Italiano</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Português"><span>Português</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Русский"><span>Русский</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="中文"><span>中文</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="日本語"><span>日本語</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="한국어"><span>한국어</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="العربية"><span>العربية</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="हिन्दी"><span>हिन्दी</span><i class="fa-solid fa-check"></i></div>
+            <div class="lang-item" data-lang="Türkçe"><span>Türkçe</span><i class="fa-solid fa-check"></i></div>
+        </div>
+    </div>
+
+    <!-- ================= SIGN OUT CONFIRM MODAL ================= -->
+    <div class="modal-overlay signout-overlay" id="signout-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Sign Out</div>
+            <div class="modal-desc">Are you sure you want to sign out?</div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="btn-cancel-signout">Cancel</button>
+                <button class="modal-btn modal-btn-danger">Sign Out</button>
             </div>
         </div>
     </div>
 
     <!-- ================= GLOBAL SEARCH FLOW ================= -->
-    <div class="search-flow-container" id="search-flow">
-        
+    <div class="full-page-container" id="search-flow">
         <!-- View 1: Recent Search -->
         <div id="view-recent-search" class="search-view active">
             <div class="search-view-header">
-                <i class="fa-solid fa-arrow-left search-back-btn" id="search-back-btn"></i>
+                <i class="fa-solid fa-arrow-left back-arrow-btn" id="search-back-btn"></i>
                 <div class="input-pill">
                     <input type="text" id="main-search-input" placeholder="Search anything...">
                     <i class="fa-solid fa-magnifying-glass" style="cursor: pointer;" id="trigger-search-action"></i>
                 </div>
             </div>
-            
             <div class="search-body">
-                <!-- Recent Search Section -->
                 <div class="search-section">
                     <div class="search-section-header">
                         <span class="search-section-title">Recent search</span>
                         <span class="clear-all-text">Clear all</span>
                     </div>
                     <ul class="search-list">
-                        <li class="search-list-item" data-query="JavaScript PDF">
-                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
-                            <span class="list-text">JavaScript PDF</span>
-                            <i class="fa-solid fa-xmark list-action-icon"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Cybersecurity books">
-                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
-                            <span class="list-text">Cybersecurity books</span>
-                            <i class="fa-solid fa-xmark list-action-icon"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Design inspiration">
-                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
-                            <span class="list-text">Design inspiration</span>
-                            <i class="fa-solid fa-xmark list-action-icon"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Python programming">
-                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
-                            <span class="list-text">Python programming</span>
-                            <i class="fa-solid fa-xmark list-action-icon"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Motivational stories">
-                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
-                            <span class="list-text">Motivational stories</span>
-                            <i class="fa-solid fa-xmark list-action-icon"></i>
-                        </li>
+                        <li class="search-list-item" data-query="JavaScript PDF"><div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div><span class="list-text">JavaScript PDF</span><i class="fa-solid fa-xmark list-action-icon"></i></li>
+                        <li class="search-list-item" data-query="Cybersecurity books"><div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div><span class="list-text">Cybersecurity books</span><i class="fa-solid fa-xmark list-action-icon"></i></li>
                     </ul>
                 </div>
-
-                <!-- Recommended Section -->
                 <div class="search-section">
-                    <div class="search-section-header">
-                        <span class="search-section-title">Recommended for you</span>
-                    </div>
+                    <div class="search-section-header"><span class="search-section-title">Recommended for you</span></div>
                     <ul class="search-list">
-                        <li class="search-list-item" data-query="Artificial intelligence">
-                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
-                            <span class="list-text">Artificial intelligence</span>
-                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Best UI/UX design">
-                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
-                            <span class="list-text">Best UI/UX design</span>
-                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Business ideas">
-                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
-                            <span class="list-text">Business ideas</span>
-                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Graphic design resources">
-                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
-                            <span class="list-text">Graphic design resources</span>
-                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
-                        </li>
-                        <li class="search-list-item" data-query="Self development books">
-                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
-                            <span class="list-text">Self development books</span>
-                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
-                        </li>
+                        <li class="search-list-item" data-query="Artificial intelligence"><div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div><span class="list-text">Artificial intelligence</span><i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i></li>
+                        <li class="search-list-item" data-query="Best UI/UX design"><div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div><span class="list-text">Best UI/UX design</span><i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i></li>
                     </ul>
                 </div>
             </div>
@@ -1009,224 +776,570 @@
         <!-- View 2: Search Results -->
         <div id="view-search-results" class="search-view">
             <div class="search-view-header">
-                <!-- Tapping this pill returns to View 1 -->
                 <div class="input-pill results-pill" id="return-to-recent-btn">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <span class="search-query-display" id="displayed-search-query">example</span>
-                    <!-- Clear button to return to view 1 and clear input -->
-                    <div class="clear-search-btn" id="clear-search-btn">
-                        <i class="fa-solid fa-xmark"></i>
-                    </div>
+                    <div class="clear-search-btn" id="clear-search-btn"><i class="fa-solid fa-xmark"></i></div>
                 </div>
             </div>
-            
             <div class="search-results-content">
-                
-                <!-- State 1: Skeleton Loader (Simulating Network Request) -->
                 <div class="skeleton-list" id="search-results-skeleton">
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
-                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
-                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
-                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
                 </div>
-
-                <!-- State 2: Offline Message (Shown after timeout) -->
                 <div class="offline-container" id="search-results-offline" style="display: none;">
-                    <div class="wifi-icon-wrapper">
-                        <i class="fa-solid fa-wifi"></i>
-                        <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
-                    </div>
+                    <div class="wifi-icon-wrapper"><i class="fa-solid fa-wifi"></i><div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div></div>
                     <h2 class="offline-title">You're offline</h2>
                     <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
-                    <button class="btn-reload" id="search-result-reload-btn">
-                        <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
-                        <span class="reload-text">Reload</span>
-                    </button>
+                    <button class="btn-reload" id="search-result-reload-btn"><i class="fa-solid fa-arrow-rotate-right reload-icon"></i><span class="reload-text">Reload</span></button>
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- ================= SETTINGS INTERFACE ================= -->
+    <div class="full-page-container" id="settings-flow">
+        <div class="search-view-header">
+            <i class="fa-solid fa-arrow-left back-arrow-btn" id="settings-back-btn"></i>
+            <div class="settings-header-title">Settings</div>
+        </div>
+        
+        <div class="settings-body">
+            
+            <!-- Preferences -->
+            <div class="settings-group">
+                <div class="settings-group-label">Preferences</div>
+                <div class="settings-card">
+                    <!-- Theme Toggle -->
+                    <div class="settings-item no-action">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-moon"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Theme</div>
+                            <div class="settings-subtitle">Light / Dark mode</div>
+                        </div>
+                        <div class="settings-action">
+                            <input type="checkbox" class="toggle-switch" id="theme-toggle">
+                        </div>
+                    </div>
+                    <div class="settings-divider"></div>
+                    <!-- Language Selection -->
+                    <div class="settings-item trigger-language">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-globe"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Language</div>
+                        </div>
+                        <div class="settings-action">
+                            <span id="display-selected-lang">English</span>
+                            <i class="fa-solid fa-angle-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage -->
+            <div class="settings-group">
+                <div class="settings-group-label">Storage</div>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-regular fa-trash-can"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Clear Cache</div>
+                            <div class="settings-subtitle">Free up storage space</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-database"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Storage Usage</div>
+                            <div class="settings-subtitle">View app storage usage</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account -->
+            <div class="settings-group">
+                <div class="settings-group-label">Account</div>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-lock"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Change Password</div>
+                            <div class="settings-subtitle">Update your password</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="settings-group">
+                <div class="settings-group-label">Support</div>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-headset"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Help & Support</div>
+                            <div class="settings-subtitle">Get help and contact support</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal -->
+            <div class="settings-group">
+                <div class="settings-group-label">Legal</div>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-file-shield"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Privacy Policy</div>
+                            <div class="settings-subtitle">Read our privacy policy</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-file-contract"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Terms of Use</div>
+                            <div class="settings-subtitle">Read our terms of use</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About -->
+            <div class="settings-group">
+                <div class="settings-group-label">About</div>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-solid fa-circle-info"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">About</div>
+                            <div class="settings-subtitle">App version and information</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-item">
+                        <div class="settings-icon-wrapper"><i class="fa-regular fa-star"></i></div>
+                        <div class="settings-text-wrapper">
+                            <div class="settings-title">Rate the App</div>
+                            <div class="settings-subtitle">Share your feedback with us</div>
+                        </div>
+                        <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sign Out Button -->
+            <button class="btn-signout-main trigger-signout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+            </button>
+            
+        </div>
+    </div>
+
+    <!-- ================= THEME INTERFACE (NEW) ================= -->
+    <div class="full-page-container" id="theme-flow">
+        <div class="search-view-header">
+            <i class="fa-solid fa-arrow-left back-arrow-btn" id="theme-back-btn"></i>
+            <div class="settings-header-title">Theme</div>
+        </div>
+        
+        <div class="theme-body">
+            
+            <!-- Theme Toggle Card -->
+            <div class="settings-card" style="margin-bottom: 24px;">
+                <div class="settings-item no-action">
+                    <div class="settings-icon-wrapper"><i class="fa-solid fa-moon"></i></div>
+                    <div class="settings-text-wrapper">
+                        <div class="settings-title">Theme</div>
+                        <div class="settings-subtitle">Light / Dark mode</div>
+                    </div>
+                    <div class="settings-action">
+                        <input type="checkbox" class="toggle-switch" id="theme-view-toggle">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ad Banner Slider -->
+            <div class="theme-slider-container">
+                <div class="theme-slider-track" id="theme-slider-track">
+                    <!-- Slide 1 -->
+                    <div class="theme-slide">
+                        <div class="ad-banner-inner">
+                            <div class="ad-badge">Ad</div>
+                            <div>
+                                <div class="ad-tag">NEW ARRIVAL</div>
+                                <div class="ad-title">STEP UP<br>YOUR STYLE</div>
+                                <div class="ad-desc">Premium comfort.<br>Everyday performance.</div>
+                                <div class="ad-btn">SHOP NOW <i class="fa-solid fa-angle-right"></i></div>
+                            </div>
+                            <div class="ad-graphic"></div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Running_shoe.png/320px-Running_shoe.png" class="ad-shoe-img" alt="Shoe">
+                            <div class="ad-discount-badge">
+                                <span>UP TO</span>
+                                <span>30%</span>
+                                <span>OFF</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="theme-slide">
+                        <div class="ad-banner-inner">
+                            <div class="ad-badge">Ad</div>
+                            <div>
+                                <div class="ad-tag">NEW ARRIVAL</div>
+                                <div class="ad-title">STEP UP<br>YOUR STYLE</div>
+                                <div class="ad-desc">Premium comfort.<br>Everyday performance.</div>
+                                <div class="ad-btn">SHOP NOW <i class="fa-solid fa-angle-right"></i></div>
+                            </div>
+                            <div class="ad-graphic"></div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Running_shoe.png/320px-Running_shoe.png" class="ad-shoe-img" alt="Shoe">
+                            <div class="ad-discount-badge">
+                                <span>UP TO</span>
+                                <span>30%</span>
+                                <span>OFF</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="theme-slide">
+                        <div class="ad-banner-inner">
+                            <div class="ad-badge">Ad</div>
+                            <div>
+                                <div class="ad-tag">NEW ARRIVAL</div>
+                                <div class="ad-title">STEP UP<br>YOUR STYLE</div>
+                                <div class="ad-desc">Premium comfort.<br>Everyday performance.</div>
+                                <div class="ad-btn">SHOP NOW <i class="fa-solid fa-angle-right"></i></div>
+                            </div>
+                            <div class="ad-graphic"></div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Running_shoe.png/320px-Running_shoe.png" class="ad-shoe-img" alt="Shoe">
+                            <div class="ad-discount-badge">
+                                <span>UP TO</span>
+                                <span>30%</span>
+                                <span>OFF</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination Dots -->
+            <div class="theme-dots">
+                <span class="theme-dot active"></span>
+                <span class="theme-dot"></span>
+                <span class="theme-dot"></span>
+            </div>
+
+            <!-- App Version Card -->
+            <div class="settings-card">
+                <div class="settings-item">
+                    <div class="settings-icon-wrapper"><i class="fa-solid fa-circle-info"></i></div>
+                    <div class="settings-text-wrapper">
+                        <div class="settings-title">App Version</div>
+                        <div class="settings-subtitle">1.0.0 (100)</div>
+                    </div>
+                    <div class="settings-action"><i class="fa-solid fa-angle-right"></i></div>
+                </div>
+            </div>
+            
+            <!-- Remaining space is naturally blank due to flex column layout -->
+        </div>
     </div>
 
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        
-        /* --- Navigation Logic --- */
-        const navItems = document.querySelectorAll('.nav-item[data-target]');
-        const pages = document.querySelectorAll('.page');
 
-        navItems.forEach(item => {
+        // ==========================================
+        // HISTORY API ROUTER (Fixes Device Back Button)
+        // ==========================================
+        
+        let currentState = { page: 'home', overlay: null };
+        let searchNetworkTimeout; 
+        
+        // Theme Slider Variables
+        let themeSliderInterval;
+        let currentThemeSlide = 0;
+        const totalThemeSlides = 3;
+
+        function renderState(state) {
+            
+            // 1. Render Base Page (Tabs)
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const targetPage = document.getElementById(`page-${state.page}`);
+            if (targetPage) targetPage.classList.add('active');
+
+            // Render Nav Highlight
+            document.querySelectorAll('.nav-item[data-target]').forEach(n => n.classList.remove('active'));
+            const activeNav = document.querySelector(`.nav-item[data-target="${state.page}"]`);
+            if (activeNav) activeNav.classList.add('active');
+
+            // 2. Render Overlays / Full Pages
+            const elsToHide = ['upload-panel', 'upload-overlay', 'sidebar', 'sidebar-overlay', 'search-flow', 'settings-flow', 'language-panel', 'language-overlay', 'signout-overlay', 'theme-flow'];
+            elsToHide.forEach(id => document.getElementById(id).classList.remove('active'));
+            
+            if (state.overlay !== 'search-results') clearTimeout(searchNetworkTimeout);
+
+            // Handle Theme Slider Lifecycle
+            if (state.overlay === 'theme') {
+                startThemeSlider();
+            } else {
+                stopThemeSlider();
+            }
+
+            // Turn specific overlays on based on state
+            if (state.overlay === 'upload') {
+                document.getElementById('upload-panel').classList.add('active');
+                document.getElementById('upload-overlay').classList.add('active');
+            } else if (state.overlay === 'sidebar') {
+                document.getElementById('sidebar').classList.add('active');
+                document.getElementById('sidebar-overlay').classList.add('active');
+            } else if (state.overlay === 'search-recent') {
+                document.getElementById('search-flow').classList.add('active');
+                document.getElementById('view-search-results').classList.remove('active');
+                document.getElementById('view-recent-search').classList.add('active');
+            } else if (state.overlay === 'search-results') {
+                document.getElementById('search-flow').classList.add('active');
+                document.getElementById('view-recent-search').classList.remove('active');
+                document.getElementById('view-search-results').classList.add('active');
+            } else if (state.overlay === 'settings') {
+                document.getElementById('settings-flow').classList.add('active');
+            } else if (state.overlay === 'theme') {
+                document.getElementById('theme-flow').classList.add('active');
+            } else if (state.overlay === 'language') {
+                // Ensure Settings is active behind the panel
+                document.getElementById('settings-flow').classList.add('active');
+                document.getElementById('language-panel').classList.add('active');
+                document.getElementById('language-overlay').classList.add('active');
+            } else if (state.overlay === 'signout') {
+                // Ensure Settings is active behind the modal
+                document.getElementById('settings-flow').classList.add('active');
+                document.getElementById('signout-overlay').classList.add('active');
+            }
+        }
+
+        function navigateTo(page, overlay = null) {
+            if (currentState.page === page && currentState.overlay === overlay) return;
+            const newState = { page, overlay };
+            history.pushState(newState, '', `#${overlay || page}`);
+            currentState = newState;
+            renderState(currentState);
+        }
+
+        function goBack() { history.back(); }
+
+        history.replaceState(currentState, '', '#home');
+        renderState(currentState);
+
+        window.addEventListener('popstate', (e) => {
+            if (e.state) {
+                currentState = e.state;
+                renderState(currentState);
+            } else {
+                currentState = { page: 'home', overlay: null };
+                renderState(currentState);
+            }
+        });
+
+
+        // ==========================================
+        // UI EVENT LISTENERS
+        // ==========================================
+
+        // --- Theme Engine ---
+        const themeToggleMain = document.getElementById('theme-toggle');
+        const themeToggleView = document.getElementById('theme-view-toggle');
+        
+        function updateTheme(isDark) {
+            const newTheme = isDark ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            if (themeToggleMain) themeToggleMain.checked = isDark;
+            if (themeToggleView) themeToggleView.checked = isDark;
+        }
+
+        // Initialize switches based on the immediate script loaded at the top
+        const initialIsDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if(themeToggleMain) themeToggleMain.checked = initialIsDark;
+        if(themeToggleView) themeToggleView.checked = initialIsDark;
+
+        if (themeToggleMain) themeToggleMain.addEventListener('change', (e) => updateTheme(e.target.checked));
+        if (themeToggleView) themeToggleView.addEventListener('change', (e) => updateTheme(e.target.checked));
+
+
+        // --- Nav ---
+        document.querySelectorAll('.nav-item[data-target]').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetId = `page-${item.getAttribute('data-target')}`;
-                
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                item.classList.add('active');
-
-                pages.forEach(page => {
-                    if(page.id === targetId) {
-                        page.classList.add('active');
-                    } else {
-                        page.classList.remove('active');
-                    }
-                });
+                navigateTo(item.getAttribute('data-target'), null);
             });
         });
 
-        /* --- Upload Panel Logic --- */
-        const uploadBtn = document.getElementById('nav-btn-upload');
-        const uploadPanel = document.getElementById('upload-panel');
-        const uploadOverlay = document.getElementById('upload-overlay');
-        const closeUploadBtn = document.getElementById('close-upload-btn');
+        // --- Sidebar ---
+        document.getElementById('open-sidebar-btn').addEventListener('click', () => navigateTo(currentState.page, 'sidebar'));
+        document.getElementById('sidebar-overlay').addEventListener('click', goBack);
+        document.getElementById('close-sidebar-btn').addEventListener('click', goBack);
 
-        const openPanel = () => { uploadPanel.classList.add('active'); uploadOverlay.classList.add('active'); };
-        const closePanel = () => { uploadPanel.classList.remove('active'); uploadOverlay.classList.remove('active'); };
-
-        uploadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            uploadPanel.classList.contains('active') ? closePanel() : openPanel();
+        // Sidebar Theme Button
+        document.getElementById('sidebar-theme-btn').addEventListener('click', () => {
+            navigateTo(currentState.page, 'theme');
         });
-        uploadOverlay.addEventListener('click', closePanel);
-        closeUploadBtn.addEventListener('click', closePanel);
+
+        // --- Theme Flow (New Page) ---
+        document.getElementById('theme-back-btn').addEventListener('click', goBack);
+
+        function startThemeSlider() {
+            if(themeSliderInterval) clearInterval(themeSliderInterval);
+            themeSliderInterval = setInterval(() => {
+                currentThemeSlide = (currentThemeSlide + 1) % totalThemeSlides;
+                updateThemeSliderUI();
+            }, 3000);
+        }
+
+        function stopThemeSlider() {
+            if(themeSliderInterval) clearInterval(themeSliderInterval);
+        }
+
+        function updateThemeSliderUI() {
+            const track = document.getElementById('theme-slider-track');
+            const dots = document.querySelectorAll('.theme-dot');
+            if(track) {
+                track.style.transform = `translateX(-${currentThemeSlide * 33.333}%)`;
+            }
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentThemeSlide);
+            });
+        }
+        
+        // --- Discover Page Interactions ---
+        const categoryPills = document.querySelectorAll('.category-pill:not(.icon-only)');
+        categoryPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                categoryPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+            });
+        });
 
 
-        /* --- Reload Button Animation Logic --- */
+        // --- Upload ---
+        document.getElementById('nav-btn-upload').addEventListener('click', (e) => {
+            e.preventDefault();
+            currentState.overlay === 'upload' ? goBack() : navigateTo(currentState.page, 'upload');
+        });
+        document.getElementById('upload-overlay').addEventListener('click', goBack);
+        document.getElementById('close-upload-btn').addEventListener('click', goBack);
+
+        // --- Reload Buttons ---
         const triggerReloadAnimation = (btnElement) => {
             if(!btnElement || btnElement.classList.contains('loading')) return;
             btnElement.classList.add('loading');
             setTimeout(() => btnElement.classList.remove('loading'), 1500); 
         };
-
-        document.querySelectorAll('.btn-reload').forEach(btn => {
+        document.querySelectorAll('.btn-reload:not(#search-result-reload-btn)').forEach(btn => {
             btn.addEventListener('click', function() { triggerReloadAnimation(this); });
         });
 
-        const discoverCategoryPills = document.querySelectorAll('#page-discover .category-pill:not(.icon-only)');
-        const discoverReloadBtn = document.getElementById('discover-reload-btn');
+        // --- Settings Interface ---
+        document.querySelectorAll('.trigger-settings').forEach(btn => {
+            btn.addEventListener('click', () => navigateTo(currentState.page, 'settings'));
+        });
+        document.getElementById('settings-back-btn').addEventListener('click', goBack);
 
-        discoverCategoryPills.forEach(pill => {
-            pill.addEventListener('click', function() {
-                discoverCategoryPills.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                triggerReloadAnimation(discoverReloadBtn);
-                this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        // --- Language Panel ---
+        document.querySelectorAll('.trigger-language').forEach(btn => {
+            btn.addEventListener('click', () => navigateTo(currentState.page, 'language'));
+        });
+        document.getElementById('language-overlay').addEventListener('click', goBack);
+        document.getElementById('close-lang-btn').addEventListener('click', goBack);
+
+        // Language selection logic
+        const langItems = document.querySelectorAll('.lang-item');
+        const displaySelectedLang = document.getElementById('display-selected-lang');
+        
+        langItems.forEach(item => {
+            item.addEventListener('click', () => {
+                langItems.forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                const selectedLang = item.getAttribute('data-lang');
+                displaySelectedLang.innerText = selectedLang;
+                setTimeout(goBack, 200); // Wait a fraction to show checkmark then close
             });
         });
 
+        // --- Signout Modal ---
+        document.querySelectorAll('.trigger-signout').forEach(btn => {
+            btn.addEventListener('click', () => navigateTo(currentState.page, 'signout'));
+        });
+        document.getElementById('signout-overlay').addEventListener('click', (e) => {
+            if(e.target === document.getElementById('signout-overlay')) goBack(); // Only outside click
+        });
+        document.getElementById('btn-cancel-signout').addEventListener('click', goBack);
 
-        /* --- Global Search Flow Logic --- */
-        const searchFlowContainer = document.getElementById('search-flow');
-        const viewRecentSearch = document.getElementById('view-recent-search');
-        const viewSearchResults = document.getElementById('view-search-results');
-        
+
+        // --- Global Search Flow ---
         const mainSearchInput = document.getElementById('main-search-input');
-        const triggerSearchAction = document.getElementById('trigger-search-action');
         const displayedSearchQuery = document.getElementById('displayed-search-query');
-        
-        const searchBackBtn = document.getElementById('search-back-btn');
-        const returnToRecentBtn = document.getElementById('return-to-recent-btn');
-        const clearSearchBtn = document.getElementById('clear-search-btn');
-
         const searchResultsSkeleton = document.getElementById('search-results-skeleton');
         const searchResultsOffline = document.getElementById('search-results-offline');
-        
-        let searchNetworkTimeout; // Keep track of the fake network request
 
-        // 1. Open Search Flow
         document.querySelectorAll('.trigger-search').forEach(trigger => {
             trigger.addEventListener('click', () => {
-                searchFlowContainer.classList.add('active');
-                viewSearchResults.classList.remove('active');
-                viewRecentSearch.classList.add('active');
-                
-                setTimeout(() => mainSearchInput.focus(), 300);
+                navigateTo(currentState.page, 'search-recent');
+                setTimeout(() => mainSearchInput.focus(), 300); 
             });
         });
 
-        // 2. Close Entire Search Flow
-        searchBackBtn.addEventListener('click', () => {
-            searchFlowContainer.classList.remove('active');
-            mainSearchInput.value = ''; 
-            clearTimeout(searchNetworkTimeout); // Cancel pending search if closed early
+        document.getElementById('search-back-btn').addEventListener('click', () => {
+            mainSearchInput.value = '';
+            goBack();
         });
 
-        // 3. Execute Search Function (With Skeleton Animation)
         const executeSearch = (query) => {
             const finalQuery = query.trim() || 'example'; 
             displayedSearchQuery.innerText = finalQuery;
-            
-            // Switch to the results view
-            viewRecentSearch.classList.remove('active');
-            viewSearchResults.classList.add('active');
-
-            // Set initial state: show skeleton, hide offline message
+            navigateTo(currentState.page, 'search-results');
             searchResultsSkeleton.style.display = 'block';
             searchResultsOffline.style.display = 'none';
-
-            // Clear previous timeout if user searches again quickly
             if(searchNetworkTimeout) clearTimeout(searchNetworkTimeout);
-            
-            // Simulate network request duration
             searchNetworkTimeout = setTimeout(() => {
                 searchResultsSkeleton.style.display = 'none';
                 searchResultsOffline.style.display = 'flex'; 
             }, 1500); 
         };
 
-        // Submit search via Enter key
         mainSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                executeSearch(mainSearchInput.value);
-                mainSearchInput.blur(); 
-            }
+            if (e.key === 'Enter') { e.preventDefault(); executeSearch(mainSearchInput.value); mainSearchInput.blur(); }
         });
+        document.getElementById('trigger-search-action').addEventListener('click', () => executeSearch(mainSearchInput.value));
 
-        // Submit search via icon click
-        triggerSearchAction.addEventListener('click', () => {
-            executeSearch(mainSearchInput.value);
-        });
-
-        // Submit search via List Item click 
         document.querySelectorAll('.search-list-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 if(e.target.classList.contains('fa-xmark')) return; 
-                
-                const query = this.getAttribute('data-query');
-                mainSearchInput.value = query;
-                executeSearch(query);
+                mainSearchInput.value = this.getAttribute('data-query');
+                executeSearch(mainSearchInput.value);
             });
         });
 
-        // 4. Return to Recent Search from Results
-        returnToRecentBtn.addEventListener('click', (e) => {
-            if (e.target.closest('#clear-search-btn')) return;
-            
-            viewSearchResults.classList.remove('active');
-            viewRecentSearch.classList.add('active');
-            mainSearchInput.focus();
-            clearTimeout(searchNetworkTimeout); // Cancel pending search request
+        document.getElementById('return-to-recent-btn').addEventListener('click', (e) => {
+            if (e.target.closest('#clear-search-btn')) return; goBack(); 
         });
 
-        // 5. Clear Search & Return
-        clearSearchBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            mainSearchInput.value = '';
-            viewSearchResults.classList.remove('active');
-            viewRecentSearch.classList.add('active');
-            mainSearchInput.focus();
-            clearTimeout(searchNetworkTimeout); 
+        document.getElementById('clear-search-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); mainSearchInput.value = ''; goBack(); 
         });
         
-        // Connect the reload button on the search results screen to retry the fake request
-        document.getElementById('search-result-reload-btn').addEventListener('click', () => {
-             // Restart the fake network request when clicking reload
-             executeSearch(mainSearchInput.value);
-        });
+        document.getElementById('search-result-reload-btn').addEventListener('click', () => executeSearch(mainSearchInput.value));
 
     });
 </script>
