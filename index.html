@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mobile App Frame</title>
-    <!-- FontAwesome strictly for icons as SVGs are disabled -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -14,6 +13,7 @@
             --accent-color: #3b28cc;
             --text-main: #111111;
             --text-muted: #666666;
+            --text-light: #999999;
             --bg-main: #ffffff;
             --bg-secondary: #f2f3f5;
             --bg-skeleton: #e5e7eb;
@@ -21,6 +21,7 @@
             --nav-height: 60px;
             --header-height: 56px;
             --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-area-top: env(safe-area-inset-top, 0px);
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --transition-speed: 0.3s;
         }
@@ -42,7 +43,6 @@
             overflow: hidden;
         }
 
-        /* App Container for WebView */
         #app {
             position: relative;
             width: 100%;
@@ -52,7 +52,7 @@
             background: var(--bg-main);
         }
 
-        /* --- Page Container & Transitions --- */
+        /* --- Page Container --- */
         .pages-container {
             flex: 1;
             position: relative;
@@ -109,7 +109,6 @@
             cursor: pointer;
         }
 
-        /* Custom Header layout for Home Page */
         .home-header-left, .home-header-right {
             display: flex;
             align-items: center;
@@ -143,6 +142,12 @@
             padding: 0 30px;
             text-align: center;
             z-index: 5;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .wifi-icon-wrapper {
@@ -259,6 +264,61 @@
             padding: 6px 10px;
         }
 
+        /* --- Skeletons Components --- */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .skeleton-list {
+            width: 100%;
+            padding: 10px 16px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Specific to chat overlay */
+        #page-chat .skeleton-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
+        }
+
+        .skeleton-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .skel-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--bg-skeleton);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .skel-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skel-line {
+            height: 10px;
+            background-color: var(--bg-skeleton);
+            border-radius: 5px;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        .skel-line.short { width: 45%; animation-delay: 0.2s; }
+        .skel-line.long { width: 85%; }
+        .skel-line.badge { width: 20px; margin-left: auto; animation-delay: 0.4s; }
+
         /* --- Chat Page Specifics --- */
         .search-bar-container {
             padding: 0 16px 12px 16px;
@@ -274,6 +334,7 @@
             gap: 8px;
             color: var(--text-muted);
             font-size: 14px;
+            cursor: pointer;
         }
 
         .chat-content-area {
@@ -282,48 +343,6 @@
             overflow: hidden;
             display: flex;
         }
-
-        .skeleton-list {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 10px 16px;
-            pointer-events: none;
-            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
-            z-index: 1;
-        }
-
-        .skeleton-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .skel-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background-color: var(--bg-skeleton);
-        }
-
-        .skel-lines {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .skel-line {
-            height: 10px;
-            background-color: var(--bg-skeleton);
-            border-radius: 5px;
-        }
-        .skel-line.short { width: 45%; }
-        .skel-line.long { width: 85%; }
-        .skel-line.badge { width: 20px; margin-left: auto; }
 
         #page-chat .offline-container {
             z-index: 5;
@@ -518,12 +537,211 @@
             font-weight: 600;
         }
 
+        /* --- Global Search Flow Container --- */
+        .search-flow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-main);
+            z-index: 300;
+            transform: translateX(100%);
+            transition: transform var(--transition-speed) ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-flow-container.active {
+            transform: translateX(0);
+        }
+
+        .search-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-main);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s;
+        }
+
+        .search-view.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        .search-view-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            gap: 16px;
+            padding-top: calc(10px + var(--safe-area-top));
+        }
+        
+        #view-search-results .search-view-header {
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .search-back-btn {
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .input-pill {
+            flex: 1;
+            background-color: var(--bg-secondary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            gap: 12px;
+        }
+
+        .input-pill.results-pill {
+            padding: 12px 16px;
+            cursor: pointer; 
+        }
+
+        .input-pill input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 15px;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+        
+        .input-pill input::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-pill .fa-magnifying-glass {
+            color: var(--text-main);
+            font-size: 16px;
+        }
+        
+        .input-pill.results-pill .fa-magnifying-glass {
+            color: var(--text-light);
+        }
+
+        .search-query-display {
+            flex: 1;
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        .clear-search-btn {
+            color: var(--text-light);
+            background: #e2e3e7;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .search-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px;
+        }
+
+        .search-section {
+            margin-top: 24px;
+            margin-bottom: 30px;
+        }
+
+        .search-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-section-title {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .clear-all-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .search-list {
+            list-style: none;
+        }
+
+        .search-list li {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .search-list li:last-child {
+            border-bottom: none;
+        }
+
+        .list-icon-bg {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .list-text {
+            flex: 1;
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        .list-action-icon {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .angled-arrow {
+            transform: rotate(-45deg);
+        }
+
+        /* --- Search Results specific styling --- */
+        .search-results-content {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="app">
     
+    <!-- ================= MAIN APP PAGES ================= -->
     <div class="pages-container">
         
         <!-- ================= HOME PAGE ================= -->
@@ -534,7 +752,7 @@
                     <div class="header-title">Zoviento</div>
                 </div>
                 <div class="home-header-right">
-                    <i class="fa-solid fa-magnifying-glass header-icon"></i>
+                    <i class="fa-solid fa-magnifying-glass header-icon trigger-search"></i>
                     <div class="notification-wrapper header-icon">
                         <i class="fa-regular fa-bell"></i>
                         <div class="notification-dot"></div>
@@ -560,7 +778,7 @@
         <div id="page-discover" class="page">
             <div class="header">
                 <div class="header-title">Discover</div>
-                <i class="fa-solid fa-magnifying-glass header-icon"></i>
+                <i class="fa-solid fa-magnifying-glass header-icon trigger-search"></i>
             </div>
             
             <div class="categories-scroll">
@@ -595,7 +813,7 @@
             </div>
             
             <div class="search-bar-container">
-                <div class="search-bar">
+                <div class="search-bar trigger-search">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <span>Search</span>
                 </div>
@@ -603,7 +821,6 @@
 
             <div class="chat-content-area">
                 <div class="skeleton-list">
-                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
                     <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
@@ -704,6 +921,135 @@
         </div>
     </div>
 
+    <!-- ================= GLOBAL SEARCH FLOW ================= -->
+    <div class="search-flow-container" id="search-flow">
+        
+        <!-- View 1: Recent Search -->
+        <div id="view-recent-search" class="search-view active">
+            <div class="search-view-header">
+                <i class="fa-solid fa-arrow-left search-back-btn" id="search-back-btn"></i>
+                <div class="input-pill">
+                    <input type="text" id="main-search-input" placeholder="Search anything...">
+                    <i class="fa-solid fa-magnifying-glass" style="cursor: pointer;" id="trigger-search-action"></i>
+                </div>
+            </div>
+            
+            <div class="search-body">
+                <!-- Recent Search Section -->
+                <div class="search-section">
+                    <div class="search-section-header">
+                        <span class="search-section-title">Recent search</span>
+                        <span class="clear-all-text">Clear all</span>
+                    </div>
+                    <ul class="search-list">
+                        <li class="search-list-item" data-query="JavaScript PDF">
+                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
+                            <span class="list-text">JavaScript PDF</span>
+                            <i class="fa-solid fa-xmark list-action-icon"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Cybersecurity books">
+                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
+                            <span class="list-text">Cybersecurity books</span>
+                            <i class="fa-solid fa-xmark list-action-icon"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Design inspiration">
+                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
+                            <span class="list-text">Design inspiration</span>
+                            <i class="fa-solid fa-xmark list-action-icon"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Python programming">
+                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
+                            <span class="list-text">Python programming</span>
+                            <i class="fa-solid fa-xmark list-action-icon"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Motivational stories">
+                            <div class="list-icon-bg"><i class="fa-regular fa-clock"></i></div>
+                            <span class="list-text">Motivational stories</span>
+                            <i class="fa-solid fa-xmark list-action-icon"></i>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recommended Section -->
+                <div class="search-section">
+                    <div class="search-section-header">
+                        <span class="search-section-title">Recommended for you</span>
+                    </div>
+                    <ul class="search-list">
+                        <li class="search-list-item" data-query="Artificial intelligence">
+                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="list-text">Artificial intelligence</span>
+                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Best UI/UX design">
+                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="list-text">Best UI/UX design</span>
+                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Business ideas">
+                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="list-text">Business ideas</span>
+                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Graphic design resources">
+                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="list-text">Graphic design resources</span>
+                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
+                        </li>
+                        <li class="search-list-item" data-query="Self development books">
+                            <div class="list-icon-bg"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="list-text">Self development books</span>
+                            <i class="fa-solid fa-arrow-right list-action-icon angled-arrow"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: Search Results -->
+        <div id="view-search-results" class="search-view">
+            <div class="search-view-header">
+                <!-- Tapping this pill returns to View 1 -->
+                <div class="input-pill results-pill" id="return-to-recent-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span class="search-query-display" id="displayed-search-query">example</span>
+                    <!-- Clear button to return to view 1 and clear input -->
+                    <div class="clear-search-btn" id="clear-search-btn">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="search-results-content">
+                
+                <!-- State 1: Skeleton Loader (Simulating Network Request) -->
+                <div class="skeleton-list" id="search-results-skeleton">
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div></div>
+                </div>
+
+                <!-- State 2: Offline Message (Shown after timeout) -->
+                <div class="offline-container" id="search-results-offline" style="display: none;">
+                    <div class="wifi-icon-wrapper">
+                        <i class="fa-solid fa-wifi"></i>
+                        <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                    <h2 class="offline-title">You're offline</h2>
+                    <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
+                    <button class="btn-reload" id="search-result-reload-btn">
+                        <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
+                        <span class="reload-text">Reload</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
 <script>
@@ -716,7 +1062,6 @@
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                
                 const targetId = `page-${item.getAttribute('data-target')}`;
                 
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -738,65 +1083,149 @@
         const uploadOverlay = document.getElementById('upload-overlay');
         const closeUploadBtn = document.getElementById('close-upload-btn');
 
-        const openPanel = () => {
-            uploadPanel.classList.add('active');
-            uploadOverlay.classList.add('active');
-        };
-
-        const closePanel = () => {
-            uploadPanel.classList.remove('active');
-            uploadOverlay.classList.remove('active');
-        };
+        const openPanel = () => { uploadPanel.classList.add('active'); uploadOverlay.classList.add('active'); };
+        const closePanel = () => { uploadPanel.classList.remove('active'); uploadOverlay.classList.remove('active'); };
 
         uploadBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if(uploadPanel.classList.contains('active')) {
-                closePanel();
-            } else {
-                openPanel();
-            }
+            uploadPanel.classList.contains('active') ? closePanel() : openPanel();
         });
-
         uploadOverlay.addEventListener('click', closePanel);
         closeUploadBtn.addEventListener('click', closePanel);
+
 
         /* --- Reload Button Animation Logic --- */
         const triggerReloadAnimation = (btnElement) => {
             if(!btnElement || btnElement.classList.contains('loading')) return;
-
             btnElement.classList.add('loading');
-            
-            setTimeout(() => {
-                btnElement.classList.remove('loading');
-            }, 1500); 
+            setTimeout(() => btnElement.classList.remove('loading'), 1500); 
         };
 
-        // Attach click events to all reload buttons
-        const reloadBtns = document.querySelectorAll('.btn-reload');
-        reloadBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                triggerReloadAnimation(this);
-            });
+        document.querySelectorAll('.btn-reload').forEach(btn => {
+            btn.addEventListener('click', function() { triggerReloadAnimation(this); });
         });
 
-        /* --- Discover Page Category Switching Upgrade --- */
         const discoverCategoryPills = document.querySelectorAll('#page-discover .category-pill:not(.icon-only)');
         const discoverReloadBtn = document.getElementById('discover-reload-btn');
 
         discoverCategoryPills.forEach(pill => {
             pill.addEventListener('click', function() {
-                // 1. Remove active state from all pills
                 discoverCategoryPills.forEach(p => p.classList.remove('active'));
-                
-                // 2. Add active state to the clicked pill
                 this.classList.add('active');
-
-                // 3. Trigger the reload button animation below it
                 triggerReloadAnimation(discoverReloadBtn);
-                
-                // (Optional) Scroll the pill into view slightly if it's near the edge
                 this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             });
+        });
+
+
+        /* --- Global Search Flow Logic --- */
+        const searchFlowContainer = document.getElementById('search-flow');
+        const viewRecentSearch = document.getElementById('view-recent-search');
+        const viewSearchResults = document.getElementById('view-search-results');
+        
+        const mainSearchInput = document.getElementById('main-search-input');
+        const triggerSearchAction = document.getElementById('trigger-search-action');
+        const displayedSearchQuery = document.getElementById('displayed-search-query');
+        
+        const searchBackBtn = document.getElementById('search-back-btn');
+        const returnToRecentBtn = document.getElementById('return-to-recent-btn');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+
+        const searchResultsSkeleton = document.getElementById('search-results-skeleton');
+        const searchResultsOffline = document.getElementById('search-results-offline');
+        
+        let searchNetworkTimeout; // Keep track of the fake network request
+
+        // 1. Open Search Flow
+        document.querySelectorAll('.trigger-search').forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                searchFlowContainer.classList.add('active');
+                viewSearchResults.classList.remove('active');
+                viewRecentSearch.classList.add('active');
+                
+                setTimeout(() => mainSearchInput.focus(), 300);
+            });
+        });
+
+        // 2. Close Entire Search Flow
+        searchBackBtn.addEventListener('click', () => {
+            searchFlowContainer.classList.remove('active');
+            mainSearchInput.value = ''; 
+            clearTimeout(searchNetworkTimeout); // Cancel pending search if closed early
+        });
+
+        // 3. Execute Search Function (With Skeleton Animation)
+        const executeSearch = (query) => {
+            const finalQuery = query.trim() || 'example'; 
+            displayedSearchQuery.innerText = finalQuery;
+            
+            // Switch to the results view
+            viewRecentSearch.classList.remove('active');
+            viewSearchResults.classList.add('active');
+
+            // Set initial state: show skeleton, hide offline message
+            searchResultsSkeleton.style.display = 'block';
+            searchResultsOffline.style.display = 'none';
+
+            // Clear previous timeout if user searches again quickly
+            if(searchNetworkTimeout) clearTimeout(searchNetworkTimeout);
+            
+            // Simulate network request duration
+            searchNetworkTimeout = setTimeout(() => {
+                searchResultsSkeleton.style.display = 'none';
+                searchResultsOffline.style.display = 'flex'; 
+            }, 1500); 
+        };
+
+        // Submit search via Enter key
+        mainSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                executeSearch(mainSearchInput.value);
+                mainSearchInput.blur(); 
+            }
+        });
+
+        // Submit search via icon click
+        triggerSearchAction.addEventListener('click', () => {
+            executeSearch(mainSearchInput.value);
+        });
+
+        // Submit search via List Item click 
+        document.querySelectorAll('.search-list-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if(e.target.classList.contains('fa-xmark')) return; 
+                
+                const query = this.getAttribute('data-query');
+                mainSearchInput.value = query;
+                executeSearch(query);
+            });
+        });
+
+        // 4. Return to Recent Search from Results
+        returnToRecentBtn.addEventListener('click', (e) => {
+            if (e.target.closest('#clear-search-btn')) return;
+            
+            viewSearchResults.classList.remove('active');
+            viewRecentSearch.classList.add('active');
+            mainSearchInput.focus();
+            clearTimeout(searchNetworkTimeout); // Cancel pending search request
+        });
+
+        // 5. Clear Search & Return
+        clearSearchBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            mainSearchInput.value = '';
+            viewSearchResults.classList.remove('active');
+            viewRecentSearch.classList.add('active');
+            mainSearchInput.focus();
+            clearTimeout(searchNetworkTimeout); 
+        });
+        
+        // Connect the reload button on the search results screen to retry the fake request
+        document.getElementById('search-result-reload-btn').addEventListener('click', () => {
+             // Restart the fake network request when clicking reload
+             executeSearch(mainSearchInput.value);
         });
 
     });
