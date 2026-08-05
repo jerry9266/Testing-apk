@@ -3,609 +3,804 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Commerce App</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <title>Mobile App Frame</title>
+    <!-- FontAwesome strictly for icons as SVGs are disabled -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* --- Design System & Variables --- */
         :root {
-            --bg-color: #F8F9FA;
-            --text-dark: #1A1A1A;
-            --text-gray: #808080;
-            --border-color: #EAEAEA;
-            --primary-black: #111111;
-            --accent-red: #D94A3D;
-            --accent-green: #2B8A3E;
+            --primary-color: #111111;
+            --accent-color: #3b28cc;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --bg-main: #ffffff;
+            --bg-secondary: #f2f3f5;
+            --bg-skeleton: #e5e7eb;
+            --border-color: #eeeeee;
+            --nav-height: 60px;
+            --header-height: 56px;
+            --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --transition-speed: 0.3s;
         }
 
+        /* --- Base & Reset --- */
         * {
-            margin: 0; padding: 0; box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Inter', sans-serif; background-color: #222;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* ---------------------------
-           APP FRAMEWORK
-        --------------------------- */
-        .app-container {
-            width: 100%; max-width: 375px; height: 812px;
-            background-color: var(--bg-color); position: relative;
-            overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* App Container for WebView */
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-main);
         }
 
-        /* Main Feed Header - Fixed to top */
-        #app-header {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 16px; background-color: var(--bg-color); z-index: 100;
-            transition: box-shadow 0.3s ease;
+        /* --- Page Container & Transitions --- */
+        .pages-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            padding-bottom: calc(var(--nav-height) + var(--safe-area-bottom));
         }
-        #app-header.scrolled { box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-main);
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease, visibility var(--transition-speed);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            z-index: 10;
+        }
+
+        /* --- Shared Header Styles --- */
+        .header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            border-bottom: 1px solid transparent;
+        }
+
+        #page-home .header {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-icon {
+            font-size: 18px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        /* Custom Header layout for Home Page */
+        .home-header-left, .home-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
         
-        .menu-btn { font-size: 24px; color: var(--primary-black); cursor: pointer; }
-        .header-icons { display: flex; align-items: center; }
-
-        /* Animated Search Icon in Header */
-        .header-search-icon {
-            font-size: 24px; color: var(--primary-black); width: 0; opacity: 0;
-            transform: scale(0.5); margin-right: 0; overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-        }
-        #app-header.scrolled .header-search-icon {
-            width: 24px; opacity: 1; transform: scale(1); margin-right: 16px;
+        .notification-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
-        .icon-wrapper { position: relative; font-size: 24px; color: var(--primary-black); margin-left: 16px; }
-        .icon-wrapper:first-of-type { margin-left: 0; }
-        .badge {
-            position: absolute; top: -3px; right: -4px; background-color: var(--accent-red);
-            color: white; font-size: 9px; font-weight: 700; width: 15px; height: 15px;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            border: 1.5px solid var(--bg-color);
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #ff3b30;
+            border-radius: 50%;
+            border: 1.5px solid var(--bg-main);
         }
 
-        /* Fixed Bottom Navigation */
-        .bottom-nav {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px;
-            background-color: white; border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+        /* --- Generic Offline Component --- */
+        .offline-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 30px;
+            text-align: center;
+            z-index: 5;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: var(--text-gray); text-decoration: none; font-size: 9px; font-weight: 500;
-        }
-        .nav-item i { font-size: 22px; }
-        .nav-item.active { color: var(--primary-black); }
-        .nav-item.active i { font-weight: bold; }
 
-        /* Main Content Scroll Area */
-        .main-content {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            padding: 75px 16px 85px 16px; /* Pads past absolute header & nav */
-            overflow-y: auto; overflow-x: hidden;
-            -ms-overflow-style: none; scrollbar-width: none;
+        .wifi-icon-wrapper {
+            width: 90px;
+            height: 90px;
+            background-color: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 16px;
         }
-        .main-content::-webkit-scrollbar { display: none; }
 
-        /* ---------------------------
-           FEED COMPONENTS
-        --------------------------- */
-        /* Search Bar */
+        .wifi-icon-wrapper .fa-wifi {
+            font-size: 40px;
+            color: #999;
+        }
+
+        .wifi-badge {
+            position: absolute;
+            bottom: 16px;
+            right: 14px;
+            background: #999;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--bg-secondary);
+            font-size: 11px;
+        }
+
+        .offline-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .offline-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .btn-reload {
+            background-color: #1a1a24;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-reload:active {
+            transform: scale(0.96);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-reload.loading .reload-text {
+            display: none;
+        }
+
+        .btn-reload.loading .fa-arrow-rotate-right {
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        /* --- Discover Page Specifics --- */
+        .categories-scroll {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 16px;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: none; 
+            flex-shrink: 0;
+        }
+        .categories-scroll::-webkit-scrollbar { display: none; }
+
+        .category-pill {
+            padding: 6px 14px;
+            border-radius: 16px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .category-pill.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .category-pill.icon-only {
+            padding: 6px 10px;
+        }
+
+        /* --- Chat Page Specifics --- */
+        .search-bar-container {
+            padding: 0 16px 12px 16px;
+            flex-shrink: 0;
+        }
+
         .search-bar {
-            display: flex; align-items: center; background-color: white;
-            border: 1px solid var(--border-color); border-radius: 30px;
-            padding: 10px 14px; margin-bottom: 25px; width: 100%;
-        }
-        .search-bar i.ph-magnifying-glass { font-size: 18px; color: var(--text-gray); margin-right: 10px; }
-        .search-bar input { border: none; outline: none; flex: 1; font-size: 13px; color: var(--text-dark); }
-        .search-bar input::placeholder { color: #A0A0A0; }
-        .search-bar i.ph-faders { font-size: 18px; color: var(--primary-black); margin-left: 10px; }
-
-        /* Hero Slider */
-        .hero-slider-container {
-            position: relative; width: 100%; border-radius: 12px; overflow: hidden;
-            margin-bottom: 25px; background-color: #E2DCCF;
-        }
-        .slider-track { display: flex; transition: transform 0.4s ease-in-out; width: 300%; }
-        .slide { width: 33.333%; position: relative; display: flex; height: 150px; overflow: hidden; }
-        .slide-content { padding: 16px; width: 60%; z-index: 2; display: flex; flex-direction: column; justify-content: center; }
-        .slide-content h4 { font-size: 9px; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
-        .slide-content h2 { font-size: 16px; font-weight: 700; line-height: 1.1; margin-bottom: 6px; }
-        .slide-content p { font-size: 10px; color: #444; margin-bottom: 12px; line-height: 1.3; }
-        .slide-btn { background-color: var(--primary-black); color: white; border: none; padding: 7px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; width: fit-content; }
-        .slide-img { position: absolute; right: 0; bottom: 0; height: 100%; width: 60%; object-fit: cover; z-index: 1; }
-        .slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 3; }
-        .dot { width: 5px; height: 5px; background-color: rgba(255,255,255,0.6); border-radius: 50%; transition: 0.2s;}
-        .dot.active { background-color: white; width: 7px; height: 7px; transform: translateY(-1px); }
-
-        /* Categories */
-        .categories-circles { display: flex; justify-content: space-between; margin-bottom: 25px; }
-        .category-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .circle { width: 50px; height: 50px; background-color: #EEEEEE; border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .circle img { width: 32px; height: 32px; object-fit: contain; mix-blend-mode: multiply; }
-        .circle-sale { background-color: #F8E5E4; color: var(--accent-red); font-size: 22px; }
-        .category-item span { font-size: 10px; color: var(--text-dark); font-weight: 500; }
-
-        /* Section Headers */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .section-header h3 { font-size: 14px; font-weight: 700; }
-        .section-header a { font-size: 11px; color: var(--text-gray); text-decoration: none; display: flex; align-items: center; gap: 2px; }
-
-        /* Horizontal Scroll Rows */
-        .h-scroll {
-            display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
-            padding-bottom: 5px; margin-bottom: 25px; -ms-overflow-style: none; scrollbar-width: none;
-        }
-        .h-scroll::-webkit-scrollbar { display: none; }
-
-        /* Featured Cards */
-        .featured-card { width: 95px; height: 125px; border-radius: 10px; position: relative; scroll-snap-align: start; flex-shrink: 0; overflow: hidden; cursor: pointer; }
-        .featured-card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); color: white; display: flex; flex-direction: column; }
-        .card-overlay strong { font-size: 11px; margin-bottom: 1px; font-weight: 600; }
-        .card-overlay span { font-size: 9px; color: #ddd; }
-
-        /* Popular Products */
-        .product-card { width: 115px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
-        .product-img-box { width: 100%; height: 115px; background-color: #F2F2F2; border-radius: 10px; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
-        .product-img-box img { width: 85%; height: 85%; object-fit: contain; mix-blend-mode: multiply; }
-        .heart-icon { position: absolute; top: 8px; right: 8px; font-size: 16px; color: var(--text-dark); }
-        .product-info h4 { font-size: 11px; font-weight: 600; margin-bottom: 4px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .product-price-row { display: flex; justify-content: space-between; align-items: center; }
-        .price { font-size: 11px; font-weight: 700; color: var(--text-dark); }
-        .rating { display: flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 600; }
-        .rating i { color: var(--accent-red); font-size: 9px; }
-
-        /* Promo Banner (Free Delivery) */
-        .promo-banner {
-            background-color: var(--primary-black); border-radius: 10px; padding: 14px 16px;
-            display: flex; align-items: center; color: white; margin-bottom: 15px;
-        }
-        .promo-icon { font-size: 24px; margin-right: 12px; }
-        .promo-text { flex: 1; }
-        .promo-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-        .promo-text p { font-size: 10px; color: #ccc; }
-
-        /* ---------------------------
-           PRODUCT PREVIEW UI (SPA)
-        --------------------------- */
-        .product-view-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: white; z-index: 200;
-            transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .product-view-container.active { transform: translateX(0); }
-
-        /* Fixed Header Actions for Preview (Issue #4 Solved) */
-        .pd-header-actions {
-            position: absolute; top: 16px; left: 16px; right: 16px;
-            display: flex; justify-content: space-between; z-index: 210;
-        }
-        .pd-btn-group { display: flex; gap: 10px; }
-        .pd-circle-btn {
-            width: 38px; height: 38px; background-color: white; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 20px; color: var(--primary-black); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            cursor: pointer; position: relative;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
         }
 
-        /* Internal Scroll Area for Preview (Issue #5 Solved) */
-        .pd-scroll-area {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            overflow-y: auto; overflow-x: hidden; padding-bottom: 90px;
-            -ms-overflow-style: none; scrollbar-width: none;
+        .chat-content-area {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
         }
-        .pd-scroll-area::-webkit-scrollbar { display: none; }
 
-        /* Image Gallery */
-        .pd-gallery { position: relative; height: 50%; background-color: #F5F5F5; width: 100%; }
+        .skeleton-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 16px;
+            pointer-events: none;
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 15%, rgba(0,0,0,0) 80%);
+            z-index: 1;
+        }
+
+        .skeleton-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .skel-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--bg-skeleton);
+        }
+
+        .skel-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .skel-line {
+            height: 10px;
+            background-color: var(--bg-skeleton);
+            border-radius: 5px;
+        }
+        .skel-line.short { width: 45%; }
+        .skel-line.long { width: 85%; }
+        .skel-line.badge { width: 20px; margin-left: auto; }
+
+        #page-chat .offline-container {
+            z-index: 5;
+        }
+
+        /* --- Profile Page Specifics --- */
+        .profile-user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 16px 20px 16px;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: var(--bg-skeleton);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 32px;
+        }
+
+        .profile-details h2 {
+            font-size: 18px;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+
+        .profile-details p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- Bottom Navigation --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: calc(var(--nav-height) + var(--safe-area-bottom));
+            background-color: var(--bg-main);
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            padding-bottom: var(--safe-area-bottom);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            flex: 1;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item.active {
+            color: var(--text-main);
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 0 0 3px 3px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .nav-item.active::before {
+            opacity: 1;
+        }
+
+        /* --- Upload Panel --- */
+        .upload-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-speed) ease, visibility var(--transition-speed);
+        }
+
+        .upload-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            min-height: 40%;
+            background-color: var(--bg-main);
+            border-radius: 24px 24px 0 0;
+            z-index: 201;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            padding-bottom: var(--safe-area-bottom);
+        }
+
+        .upload-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .upload-panel.active {
+            transform: translateY(0);
+        }
+
+        .upload-header {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .close-upload-btn {
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            position: absolute;
+            left: 24px;
+        }
+
+        .upload-title {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .upload-options-grid {
+            padding: 10px 24px 30px 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .upload-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .upload-option-icon {
+            width: 70px;
+            height: 70px;
+            background-color: var(--bg-secondary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
         
-        .pd-slider-track {
-            display: flex; width: 100%; height: 100%; overflow-x: auto;
-            scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none;
+        .upload-option:active .upload-option-icon {
+            background-color: var(--bg-skeleton);
         }
-        .pd-slider-track::-webkit-scrollbar { display: none; }
-        .pd-slide { min-width: 100%; height: 100%; scroll-snap-align: center; display: flex; justify-content: center; align-items: center; }
-        .pd-slide img { width: 85%; height: 85%; object-fit: contain; mix-blend-mode: multiply; }
 
-        /* Pagination & Counter */
-        .pd-pagination { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
-        .pd-dot { width: 6px; height: 6px; background-color: #D0D0D0; border-radius: 50%; transition: 0.2s; }
-        .pd-dot.active { background-color: var(--primary-black); }
-        .pd-counter { position: absolute; bottom: 20px; right: 16px; background-color: rgba(0,0,0,0.5); color: white; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 12px; }
-        .pd-fav-floating { position: absolute; bottom: -20px; right: 24px; width: 44px; height: 44px; background-color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; color: var(--primary-black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; }
-
-        /* Info Sheet */
-        .pd-info-sheet {
-            background-color: white; border-top-left-radius: 24px; border-top-right-radius: 24px;
-            margin-top: -24px; position: relative; z-index: 5; padding: 24px 16px;
+        .upload-option span {
+            font-size: 13px;
+            font-weight: 600;
         }
-        .pd-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-        .pd-rating-text { font-size: 12px; color: var(--text-gray); display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
-        .pd-rating-text i { color: var(--accent-red); font-size: 12px; }
-        .pd-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .pd-price { font-size: 22px; font-weight: 700; }
-        .pd-stock { color: var(--accent-green); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .pd-divider { height: 1px; background-color: var(--border-color); margin: 20px 0; }
-
-        /* Options */
-        .pd-section-title { font-size: 12px; font-weight: 500; margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .pd-section-title span.val { font-weight: 700; }
-        .pd-section-title span.link { color: var(--text-gray); display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        
-        .pd-color-options { display: flex; gap: 12px; }
-        .pd-color-swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .pd-color-swatch.active { border: 1.5px solid var(--primary-black); padding: 2px; }
-        .pd-color-inner { width: 100%; height: 100%; border-radius: 50%; }
-
-        .pd-size-options { display: flex; gap: 10px; margin-bottom: 5px; }
-        .pd-size-box { flex: 1; height: 38px; border: 1px solid var(--border-color); border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: 500; color: var(--text-dark); cursor: pointer; transition: 0.2s; }
-        .pd-size-box.active { border-color: var(--primary-black); border-width: 1.5px; }
-
-        /* Accordion & Reviews */
-        .pd-accordion { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
-        .pd-accordion-content { font-size: 11px; color: var(--text-gray); line-height: 1.5; margin-top: 10px; }
-        .pd-reviews-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .pd-reviews-header h3 { font-size: 13px; font-weight: 600; }
-        .pd-reviews-header a { font-size: 11px; color: var(--text-gray); text-decoration: none; display: flex; align-items: center; }
-        .pd-review-stats { display: flex; gap: 20px; align-items: center; }
-        .pd-score-big { display: flex; flex-direction: column; gap: 4px; }
-        .pd-score-big h2 { font-size: 32px; font-weight: 700; line-height: 1; }
-        .pd-score-big .stars { color: var(--accent-red); font-size: 10px; display: flex; gap: 2px; }
-        .pd-score-big p { font-size: 9px; color: var(--text-gray); margin-top: 2px; }
-        .pd-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        .pd-bar-row { display: flex; align-items: center; gap: 8px; font-size: 9px; color: var(--text-gray); }
-        .pd-bar-bg { flex: 1; height: 4px; background-color: #EEE; border-radius: 2px; position: relative; }
-        .pd-bar-fill { position: absolute; left: 0; top: 0; height: 100%; background-color: var(--primary-black); border-radius: 2px; }
-
-        /* Fixed Bottom Action Bar */
-        .pd-bottom-bar {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background-color: white; padding: 12px 16px 20px 16px;
-            display: flex; gap: 12px; border-top: 1px solid var(--border-color); z-index: 220;
-        }
-        .pd-btn-cart { flex: 1; height: 46px; border: 1px solid var(--primary-black); border-radius: 8px; background: white; color: var(--primary-black); font-size: 13px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-        .pd-btn-buy { flex: 1.5; height: 46px; background: var(--primary-black); color: white; border-radius: 8px; border: none; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; line-height: 1.2; }
-        .pd-btn-buy span:first-child { font-size: 13px; font-weight: 600; }
-        .pd-btn-buy span:last-child { font-size: 10px; opacity: 0.8; }
 
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+<div id="app">
+    
+    <div class="pages-container">
         
-        <!-- Fixed Header (Always visible) -->
-        <header id="app-header">
-            <i class="ph ph-list menu-btn"></i>
-            <div class="header-icons">
-                <i class="ph ph-magnifying-glass header-search-icon"></i>
-                <div class="icon-wrapper">
-                    <i class="ph ph-bell"></i>
-                    <span class="badge">3</span>
+        <!-- ================= HOME PAGE ================= -->
+        <div id="page-home" class="page active">
+            <div class="header">
+                <div class="home-header-left">
+                    <i class="fa-solid fa-bars header-icon"></i>
+                    <div class="header-title">Zoviento</div>
                 </div>
-                <div class="icon-wrapper">
-                    <i class="ph ph-shopping-cart"></i>
-                    <span class="badge">2</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Fixed Bottom Nav (Always visible) -->
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item active"><i class="ph-fill ph-house"></i><span>Home</span></a>
-            <a href="#" class="nav-item"><i class="ph ph-squares-four"></i><span>Categories</span></a>
-            <a href="#" class="nav-item"><i class="ph ph-heart"></i><span>Wishlist</span></a>
-            <a href="#" class="nav-item"><i class="ph ph-shopping-bag"></i><span>Orders</span></a>
-            <a href="#" class="nav-item"><i class="ph ph-user"></i><span>Account</span></a>
-        </nav>
-
-        <!-- Main Feed Scroll Area -->
-        <div class="main-content" id="scroll-area">
-            
-            <div class="search-bar" id="main-search">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" placeholder="Search for clothes, shoes & more">
-                <i class="ph ph-faders"></i>
-            </div>
-
-            <!-- Hero Slider -->
-            <div class="hero-slider-container">
-                <div class="slider-track" id="sliderTrack">
-                    <div class="slide" style="background-color: #DFD5CA;">
-                        <div class="slide-content">
-                            <h4>NEW COLLECTION</h4>
-                            <h2>Style that<br>moves with you</h2>
-                            <p>Explore the latest trends in clothing, shoes & unisex.</p>
-                            <button class="slide-btn">Shop Now</button>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop" class="slide-img" alt="models">
-                    </div>
-                    <div class="slide" style="background-color: #D3E0DF;">
-                        <div class="slide-content">
-                            <h4>SUMMER SALE</h4>
-                            <h2>Catch the<br>Summer Vibe</h2>
-                            <p>Up to 50% off on all summer essentials this week.</p>
-                            <button class="slide-btn">Explore</button>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=800&auto=format&fit=crop" class="slide-img" alt="models">
-                    </div>
-                    <div class="slide" style="background-color: #E2E2E2;">
-                        <div class="slide-content">
-                            <h4>EXCLUSIVE</h4>
-                            <h2>Premium<br>Streetwear</h2>
-                            <p>Upgrade your daily look with our exclusive drop.</p>
-                            <button class="slide-btn">Shop Now</button>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=800&auto=format&fit=crop" class="slide-img" style="object-position: top;" alt="models">
+                <div class="home-header-right">
+                    <i class="fa-solid fa-magnifying-glass header-icon"></i>
+                    <div class="notification-wrapper header-icon">
+                        <i class="fa-regular fa-bell"></i>
+                        <div class="notification-dot"></div>
                     </div>
                 </div>
-                <div class="slider-dots">
-                    <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
-                </div>
             </div>
 
-            <div class="categories-circles">
-                <div class="category-item"><div class="circle"><img src="https://plus.unsplash.com/premium_photo-1673356301535-224a0f4a86ac?q=80&w=200&auto=format&fit=crop" alt="Clothing"></div><span>Clothing</span></div>
-                <div class="category-item"><div class="circle"><img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=200&auto=format&fit=crop" alt="Shoes"></div><span>Shoes</span></div>
-                <div class="category-item"><div class="circle"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=200&auto=format&fit=crop" alt="Unisex"></div><span>Unisex</span></div>
-                <div class="category-item"><div class="circle"><img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=200&auto=format&fit=crop" alt="Accessories"></div><span>Accessories</span></div>
-                <div class="category-item"><div class="circle circle-sale"><i class="ph-fill ph-tag"></i></div><span>Sale</span></div>
-            </div>
-
-            <div class="section-header"><h3>Featured Categories</h3><a href="#">See all <i class="ph ph-caret-right"></i></a></div>
-            <div class="h-scroll">
-                <div class="featured-card trigger-pd"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=400&auto=format&fit=crop" alt="T-Shirts"><div class="card-overlay"><strong>T-Shirts</strong><span>New Arrivals</span></div></div>
-                <div class="featured-card trigger-pd"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=400&auto=format&fit=crop" alt="Hoodies"><div class="card-overlay"><strong>Hoodies</strong><span>Best Sellers</span></div></div>
-                <div class="featured-card trigger-pd"><img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=400&auto=format&fit=crop" alt="Sneakers"><div class="card-overlay"><strong>Sneakers</strong><span>Trending</span></div></div>
-                 <div class="featured-card trigger-pd"><img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=400&auto=format&fit=crop" alt="Caps"><div class="card-overlay"><strong>Caps</strong><span>Top Picks</span></div></div>
-            </div>
-
-            <div class="section-header"><h3>Popular Products</h3><a href="#">See all <i class="ph ph-caret-right"></i></a></div>
-            <div class="h-scroll">
-                <div class="product-card trigger-pd">
-                    <div class="product-img-box"><i class="ph ph-heart heart-icon"></i><img src="https://plus.unsplash.com/premium_photo-1673356301535-224a0f4a86ac?q=80&w=400&auto=format&fit=crop" alt="Hoodie"></div>
-                    <div class="product-info"><h4>Oversized Hoodie</h4><div class="product-price-row"><span class="price">$49.99</span><span class="rating"><i class="ph-fill ph-star"></i> 4.8</span></div></div>
+            <div class="offline-container">
+                <div class="wifi-icon-wrapper">
+                    <i class="fa-solid fa-wifi"></i>
+                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
                 </div>
-                <div class="product-card trigger-pd">
-                    <div class="product-img-box"><i class="ph ph-heart heart-icon"></i><img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=400&auto=format&fit=crop" alt="Sneakers"></div>
-                    <div class="product-info"><h4>Urban Sneakers</h4><div class="product-price-row"><span class="price">$79.99</span><span class="rating"><i class="ph-fill ph-star"></i> 4.7</span></div></div>
-                </div>
-                <div class="product-card trigger-pd">
-                    <div class="product-img-box"><i class="ph ph-heart heart-icon"></i><img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop" alt="T-Shirt"></div>
-                    <div class="product-info"><h4>Essential T-Shirt</h4><div class="product-price-row"><span class="price">$24.99</span><span class="rating"><i class="ph-fill ph-star"></i> 4.6</span></div></div>
-                </div>
-            </div>
-
-            <!-- Free Shipping Promo Block -->
-            <div class="promo-banner">
-                <i class="ph ph-truck promo-icon"></i>
-                <div class="promo-text">
-                    <h4>Free Shipping</h4>
-                    <p>On orders over $50</p>
-                </div>
-                <i class="ph ph-caret-right"></i>
+                <h2 class="offline-title">You're offline</h2>
+                <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
+                <button class="btn-reload">
+                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
+                    <span class="reload-text">Reload</span>
+                </button>
             </div>
         </div>
 
-
-        <!-- ==========================================
-             PRODUCT DETAILS PREVIEW INTERFACE (SPA)
-             ========================================== -->
-        <div class="product-view-container" id="productView">
+        <!-- ================= DISCOVER PAGE ================= -->
+        <div id="page-discover" class="page">
+            <div class="header">
+                <div class="header-title">Discover</div>
+                <i class="fa-solid fa-magnifying-glass header-icon"></i>
+            </div>
             
-            <!-- Sticky Top Header Actions -->
-            <div class="pd-header-actions">
-                <div class="pd-circle-btn" id="pdBackBtn"><i class="ph ph-caret-left"></i></div>
-                <div class="pd-btn-group">
-                    <div class="pd-circle-btn"><i class="ph ph-export"></i></div>
-                    <div class="pd-circle-btn">
-                        <i class="ph ph-shopping-cart"></i>
-                        <span class="badge">2</span>
-                    </div>
+            <div class="categories-scroll">
+                <div class="category-pill active">All</div>
+                <div class="category-pill">Images</div>
+                <div class="category-pill">Stories</div>
+                <div class="category-pill">PDFs</div>
+                <div class="category-pill">Text</div>
+                <div class="category-pill">Art</div>
+                <div class="category-pill icon-only"><i class="fa-solid fa-bars"></i></div>
+            </div>
+
+            <div class="offline-container">
+                <div class="wifi-icon-wrapper">
+                    <i class="fa-solid fa-wifi"></i>
+                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+                <h2 class="offline-title">You're offline</h2>
+                <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
+                <button class="btn-reload" id="discover-reload-btn">
+                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
+                    <span class="reload-text">Reload</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= CHAT PAGE ================= -->
+        <div id="page-chat" class="page">
+            <div class="header">
+                <div class="header-title">Chat</div>
+                <i class="fa-regular fa-pen-to-square header-icon"></i>
+            </div>
+            
+            <div class="search-bar-container">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Search</span>
                 </div>
             </div>
 
-            <!-- Scrollable Content of the Product Page -->
-            <div class="pd-scroll-area" id="pdScrollArea">
+            <div class="chat-content-area">
+                <div class="skeleton-list">
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                    <div class="skeleton-item"><div class="skel-avatar"></div><div class="skel-lines"><div class="skel-line long"></div><div class="skel-line short"></div></div><div class="skel-line badge"></div></div>
+                </div>
                 
-                <div class="pd-gallery">
-                    <div class="pd-slider-track" id="pdSliderTrack">
-                        <div class="pd-slide"><img src="https://plus.unsplash.com/premium_photo-1673356301535-224a0f4a86ac?q=80&w=600&auto=format&fit=crop" alt="Black Hoodie 1"></div>
-                        <div class="pd-slide"><img src="https://plus.unsplash.com/premium_photo-1673356302067-aac3b845a729?q=80&w=600&auto=format&fit=crop" alt="Black Hoodie 2"></div>
-                        <div class="pd-slide"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop" alt="Hoodie Close up"></div>
-                        <div class="pd-slide"><img src="https://plus.unsplash.com/premium_photo-1673356301535-224a0f4a86ac?q=80&w=600&auto=format&fit=crop" alt="Black Hoodie 4"></div>
-                        <div class="pd-slide"><img src="https://plus.unsplash.com/premium_photo-1673356302067-aac3b845a729?q=80&w=600&auto=format&fit=crop" alt="Black Hoodie 5"></div>
+                <div class="offline-container">
+                    <div class="wifi-icon-wrapper">
+                        <i class="fa-solid fa-wifi"></i>
+                        <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
                     </div>
-                    
-                    <div class="pd-pagination" id="pdDots">
-                        <div class="pd-dot active"></div><div class="pd-dot"></div><div class="pd-dot"></div><div class="pd-dot"></div><div class="pd-dot"></div>
-                    </div>
-                    <div class="pd-counter" id="pdCounter">1/5</div>
-                    <div class="pd-fav-floating"><i class="ph ph-heart"></i></div>
+                    <h2 class="offline-title">You're offline</h2>
+                    <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
+                    <button class="btn-reload">
+                        <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
+                        <span class="reload-text">Reload</span>
+                    </button>
                 </div>
+            </div>
+        </div>
 
-                <div class="pd-info-sheet">
-                    <h1 class="pd-title">Oversized Hoodie</h1>
-                    <div class="pd-rating-text"><i class="ph-fill ph-star"></i> 4.8 (128 reviews)</div>
-                    <div class="pd-price-row"><div class="pd-price">$49.99</div><div class="pd-stock"><i class="ph ph-bag"></i> In Stock</div></div>
-                    
-                    <div class="pd-divider"></div>
-
-                    <div class="pd-section-title"><span>Color: <span class="val" id="pdColorVal">Black</span></span></div>
-                    <div class="pd-color-options">
-                        <div class="pd-color-swatch active" data-color="Black"><div class="pd-color-inner" style="background-color: #1A1A1A;"></div></div>
-                        <div class="pd-color-swatch" data-color="Grey"><div class="pd-color-inner" style="background-color: #A9A9A9;"></div></div>
-                        <div class="pd-color-swatch" data-color="Sand"><div class="pd-color-inner" style="background-color: #D2C4B3;"></div></div>
-                        <div class="pd-color-swatch" data-color="Navy"><div class="pd-color-inner" style="background-color: #2B3D50;"></div></div>
-                        <div class="pd-color-swatch" data-color="Olive"><div class="pd-color-inner" style="background-color: #6C7A53;"></div></div>
-                    </div>
-
-                    <div class="pd-divider" style="margin: 15px 0;"></div>
-
-                    <div class="pd-section-title"><span>Size: <span class="val" id="pdSizeVal">M</span></span><span class="link"><i class="ph ph-ruler"></i> Size Guide</span></div>
-                    <div class="pd-size-options">
-                        <div class="pd-size-box">S</div>
-                        <div class="pd-size-box active">M</div>
-                        <div class="pd-size-box">L</div>
-                        <div class="pd-size-box">XL</div>
-                        <div class="pd-size-box">XXL</div>
-                    </div>
-
-                    <div class="pd-divider"></div>
-
-                    <div class="pd-accordion"><span>Product Details</span><i class="ph ph-caret-down"></i></div>
-                    <div class="pd-accordion-content">Premium quality cotton blend hoodie with an oversized fit.<br>Soft, comfortable and perfect for everyday wear.</div>
-
-                    <div class="pd-divider"></div>
-
-                    <div class="pd-reviews-header"><h3>Reviews (128)</h3><a href="#">See all <i class="ph ph-caret-right"></i></a></div>
-                    <div class="pd-review-stats">
-                        <div class="pd-score-big">
-                            <h2>4.8</h2><div class="stars"><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i><i class="ph-fill ph-star"></i></div><p>Based on 128 reviews</p>
-                        </div>
-                        <div class="pd-bars">
-                            <div class="pd-bar-row"><span>5</span><div class="pd-bar-bg"><div class="pd-bar-fill" style="width: 85%;"></div></div><span>96</span></div>
-                            <div class="pd-bar-row"><span>4</span><div class="pd-bar-bg"><div class="pd-bar-fill" style="width: 20%;"></div></div><span>24</span></div>
-                            <div class="pd-bar-row"><span>3</span><div class="pd-bar-bg"><div class="pd-bar-fill" style="width: 5%;"></div></div><span>6</span></div>
-                            <div class="pd-bar-row"><span>2</span><div class="pd-bar-bg"><div class="pd-bar-fill" style="width: 1%;"></div></div><span>1</span></div>
-                            <div class="pd-bar-row"><span>1</span><div class="pd-bar-bg"><div class="pd-bar-fill" style="width: 1%;"></div></div><span>1</span></div>
-                        </div>
-                    </div>
+        <!-- ================= PROFILE PAGE ================= -->
+        <div id="page-profile" class="page">
+            <div class="header">
+                <div class="header-title">Profile</div>
+                <i class="fa-solid fa-gear header-icon"></i>
+            </div>
+            
+            <div class="profile-user-info">
+                <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="profile-details">
+                    <h2>User</h2>
+                    <p>@user</p>
                 </div>
             </div>
 
-            <!-- Sticky Bottom Buy Bar -->
-            <div class="pd-bottom-bar">
-                <button class="pd-btn-cart"><i class="ph ph-shopping-bag" style="font-size: 16px;"></i> Add to Cart</button>
-                <button class="pd-btn-buy"><span>Buy Now</span><span>$49.99</span></button>
+            <div class="offline-container">
+                <div class="wifi-icon-wrapper">
+                    <i class="fa-solid fa-wifi"></i>
+                    <div class="wifi-badge"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+                <h2 class="offline-title">You're offline</h2>
+                <p class="offline-desc">It looks like you're not connected<br>to the internet.<br>Please check your connection and try again.</p>
+                <button class="btn-reload">
+                    <i class="fa-solid fa-arrow-rotate-right reload-icon"></i>
+                    <span class="reload-text">Reload</span>
+                </button>
             </div>
-
         </div>
 
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            /* --- MAIN FEED LOGIC --- */
-            
-            // Automatic Hero Slider
-            const track = document.getElementById('sliderTrack');
-            const dots = document.querySelectorAll('.slider-dots .dot');
-            let currentIndex = 0;
-            const totalSlides = dots.length;
+    <!-- ================= BOTTOM NAVIGATION ================= -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-target="home">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item" data-target="discover">
+            <i class="fa-regular fa-compass"></i>
+            <span>Discover</span>
+        </a>
+        <a href="#" class="nav-item" id="nav-btn-upload">
+            <i class="fa-solid fa-plus"></i>
+            <span>Upload</span>
+        </a>
+        <a href="#" class="nav-item" data-target="chat">
+            <i class="fa-regular fa-comment-dots"></i>
+            <span>Chat</span>
+        </a>
+        <a href="#" class="nav-item" data-target="profile">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
 
-            function goToSlide(index) {
-                track.style.transform = `translateX(-${(index * 100) / totalSlides}%)`;
-                dots.forEach(dot => dot.classList.remove('active'));
-                dots[index].classList.add('active');
-                currentIndex = index;
-            }
-            setInterval(() => {
-                let nextIndex = currentIndex + 1;
-                if (nextIndex >= totalSlides) nextIndex = 0;
-                goToSlide(nextIndex);
-            }, 3000);
+    <!-- ================= UPLOAD PANEL ================= -->
+    <div class="upload-overlay" id="upload-overlay"></div>
+    <div class="upload-panel" id="upload-panel">
+        <div class="upload-header">
+            <i class="fa-solid fa-xmark close-upload-btn" id="close-upload-btn"></i>
+            <div class="upload-title">Start creating now</div>
+        </div>
+        <div class="upload-options-grid">
+            <div class="upload-option">
+                <div class="upload-option-icon"><i class="fa-solid fa-thumbtack"></i></div>
+                <span>Pin</span>
+            </div>
+            <div class="upload-option">
+                <div class="upload-option-icon"><i class="fa-solid fa-scissors"></i></div>
+                <span>Collage</span>
+            </div>
+            <div class="upload-option">
+                <div class="upload-option-icon"><i class="fa-solid fa-table-columns"></i></div>
+                <span>Board</span>
+            </div>
+        </div>
+    </div>
 
-            // Sticky Search Icon logic
-            const scrollArea = document.getElementById('scroll-area');
-            const header = document.getElementById('app-header');
-            const mainSearch = document.getElementById('main-search');
+</div>
 
-            scrollArea.addEventListener('scroll', () => {
-                // If scroll past main search bar, animate search icon into header
-                const searchBottom = mainSearch.offsetTop + mainSearch.offsetHeight;
-                if (scrollArea.scrollTop > searchBottom - 20) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        /* --- Navigation Logic --- */
+        const navItems = document.querySelectorAll('.nav-item[data-target]');
+        const pages = document.querySelectorAll('.page');
 
-
-            /* --- PRODUCT PREVIEW LOGIC --- */
-            
-            const productView = document.getElementById('productView');
-            const pdScrollArea = document.getElementById('pdScrollArea');
-            const triggers = document.querySelectorAll('.trigger-pd');
-            const backBtn = document.getElementById('pdBackBtn');
-            const pdTrack = document.getElementById('pdSliderTrack');
-            
-            const colorSwatches = document.querySelectorAll('.pd-color-swatch');
-            const sizeBoxes = document.querySelectorAll('.pd-size-box');
-            const colorVal = document.getElementById('pdColorVal');
-            const sizeVal = document.getElementById('pdSizeVal');
-
-            // Open product view
-            triggers.forEach(card => {
-                card.addEventListener('click', () => {
-                    productView.classList.add('active');
-                    // Force start at very top of screen
-                    pdScrollArea.scrollTop = 0; 
-                });
-            });
-
-            // Close & Reset product view function (Optimized for performance)
-            backBtn.addEventListener('click', () => {
-                productView.classList.remove('active');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
                 
-                // Delay reset slightly to let closing animation finish smoothly
-                setTimeout(() => {
-                    pdScrollArea.scrollTop = 0;
-                    pdTrack.scrollLeft = 0; // Reset image slider to image 1
-                    
-                    // Reset selected color UI
-                    colorSwatches.forEach(s => s.classList.remove('active'));
-                    colorSwatches[0].classList.add('active');
-                    colorVal.innerText = 'Black';
+                const targetId = `page-${item.getAttribute('data-target')}`;
+                
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
 
-                    // Reset selected size UI
-                    sizeBoxes.forEach(b => b.classList.remove('active'));
-                    sizeBoxes[1].classList.add('active'); // 'M' size
-                    sizeVal.innerText = 'M';
-                }, 350);
-            });
-
-            // Manual Swiping for Product Images
-            const pdDotsList = document.querySelectorAll('#pdDots .pd-dot');
-            const pdCounter = document.getElementById('pdCounter');
-
-            pdTrack.addEventListener('scroll', () => {
-                const slideWidth = pdTrack.clientWidth;
-                const scrollPosition = pdTrack.scrollLeft;
-                const activeIndex = Math.round(scrollPosition / slideWidth);
-
-                pdDotsList.forEach(dot => dot.classList.remove('active'));
-                if (pdDotsList[activeIndex]) pdDotsList[activeIndex].classList.add('active');
-                pdCounter.innerText = `${activeIndex + 1}/5`;
-            });
-
-            // Interactive Color selector
-            colorSwatches.forEach(swatch => {
-                swatch.addEventListener('click', () => {
-                    colorSwatches.forEach(s => s.classList.remove('active'));
-                    swatch.classList.add('active');
-                    colorVal.innerText = swatch.getAttribute('data-color');
+                pages.forEach(page => {
+                    if(page.id === targetId) {
+                        page.classList.add('active');
+                    } else {
+                        page.classList.remove('active');
+                    }
                 });
             });
-
-            // Interactive Size selector
-            sizeBoxes.forEach(box => {
-                box.addEventListener('click', () => {
-                    sizeBoxes.forEach(b => b.classList.remove('active'));
-                    box.classList.add('active');
-                    sizeVal.innerText = box.innerText;
-                });
-            });
-
         });
-    </script>
+
+        /* --- Upload Panel Logic --- */
+        const uploadBtn = document.getElementById('nav-btn-upload');
+        const uploadPanel = document.getElementById('upload-panel');
+        const uploadOverlay = document.getElementById('upload-overlay');
+        const closeUploadBtn = document.getElementById('close-upload-btn');
+
+        const openPanel = () => {
+            uploadPanel.classList.add('active');
+            uploadOverlay.classList.add('active');
+        };
+
+        const closePanel = () => {
+            uploadPanel.classList.remove('active');
+            uploadOverlay.classList.remove('active');
+        };
+
+        uploadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if(uploadPanel.classList.contains('active')) {
+                closePanel();
+            } else {
+                openPanel();
+            }
+        });
+
+        uploadOverlay.addEventListener('click', closePanel);
+        closeUploadBtn.addEventListener('click', closePanel);
+
+        /* --- Reload Button Animation Logic --- */
+        const triggerReloadAnimation = (btnElement) => {
+            if(!btnElement || btnElement.classList.contains('loading')) return;
+
+            btnElement.classList.add('loading');
+            
+            setTimeout(() => {
+                btnElement.classList.remove('loading');
+            }, 1500); 
+        };
+
+        // Attach click events to all reload buttons
+        const reloadBtns = document.querySelectorAll('.btn-reload');
+        reloadBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                triggerReloadAnimation(this);
+            });
+        });
+
+        /* --- Discover Page Category Switching Upgrade --- */
+        const discoverCategoryPills = document.querySelectorAll('#page-discover .category-pill:not(.icon-only)');
+        const discoverReloadBtn = document.getElementById('discover-reload-btn');
+
+        discoverCategoryPills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                // 1. Remove active state from all pills
+                discoverCategoryPills.forEach(p => p.classList.remove('active'));
+                
+                // 2. Add active state to the clicked pill
+                this.classList.add('active');
+
+                // 3. Trigger the reload button animation below it
+                triggerReloadAnimation(discoverReloadBtn);
+                
+                // (Optional) Scroll the pill into view slightly if it's near the edge
+                this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            });
+        });
+
+    });
+</script>
+
 </body>
 </html>
