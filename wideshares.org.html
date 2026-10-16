@@ -1,0 +1,343 @@
+<style>
+    /* Scoped Styles for Wideshares Download Fragment */
+    .ws-container {
+        width: 100%;
+        min-height: 100%;
+        background-color: var(--bg-color, #0b0b10);
+        display: flex;
+        flex-direction: column;
+        color: #ffffff;
+    }
+
+    /* Custom Integrated Header */
+    .ws-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        height: 56px;
+        padding: 0 16px;
+        background-color: var(--bg-color, #0b0b10);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .ws-back-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        cursor: pointer;
+        margin-right: 8px;
+    }
+
+    .ws-back-btn svg {
+        width: 24px;
+        height: 24px;
+        stroke: #ffffff;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .ws-header-title {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+    }
+
+    /* Scrollable Content Area */
+    .ws-content {
+        padding: 24px 20px 40px 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Poster Section */
+    .ws-poster-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+
+    .ws-poster-wrapper img {
+        width: 240px;
+        max-width: 65%;
+        aspect-ratio: 2 / 3;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Meta / Title Section */
+    .ws-text-center {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .ws-category {
+        display: block;
+        font-size: 15px;
+        color: #8e8e93;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .ws-title {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 8px;
+        letter-spacing: -0.2px;
+    }
+
+    .ws-type {
+        display: block;
+        font-size: 15px;
+        color: #d1d1d6;
+        font-weight: 500;
+    }
+
+    /* Info Grid Section (File Size & Type) */
+    .ws-info-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .ws-info-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+    }
+
+    /* Push the left card text towards the right, and right card text towards the left to balance around the divider */
+    .ws-info-card:first-child { justify-content: flex-end; padding-right: 10px; }
+    .ws-info-card:last-child { justify-content: flex-start; padding-left: 10px; }
+
+    .ws-info-icon {
+        width: 24px;
+        height: 24px;
+        stroke: #a0a0a5;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+    }
+
+    .ws-card-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ws-label {
+        font-size: 13px;
+        color: #8e8e93;
+        font-weight: 500;
+    }
+
+    .ws-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .ws-vert-divider {
+        width: 1px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .ws-horiz-divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin: 0 0 24px 0;
+    }
+
+    /* List Row (Date) */
+    .ws-list-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-left: 10px; /* Slight indent to match visual weight */
+    }
+
+    /* Bottom Download Button (Requested) */
+    .ws-download-btn {
+        width: 100%;
+        background-color: var(--brand-color, #ff5216);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        height: 54px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: transform 0.1s ease, background-color 0.2s ease;
+        box-shadow: 0 4px 14px rgba(255, 82, 22, 0.25);
+    }
+
+    .ws-download-btn:active {
+        transform: scale(0.97);
+        background-color: #e6400c;
+    }
+
+    .ws-download-btn svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+</style>
+
+<div class="ws-container">
+    
+    <!-- Header Area -->
+    <div class="ws-header">
+        <div class="ws-back-btn" onclick="AppNavigation.back()">
+            <svg viewBox="0 0 24 24">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </div>
+        <div class="ws-header-title">Download</div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="ws-content">
+        
+        <!-- Poster -->
+        <div class="ws-poster-wrapper">
+            <!-- Default image set to reference picture -->
+            <img id="ws-dynamic-img" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" alt="Poster">
+        </div>
+
+        <!-- Titles -->
+        <div class="ws-text-center">
+            <span class="ws-category" id="ws-dynamic-cat">Movies</span>
+            <h1 class="ws-title" id="ws-dynamic-title">Practical Magic 2 2026</h1>
+            <span class="ws-type" id="ws-dynamic-type">Movie</span>
+        </div>
+
+        <!-- File Size & Type Block -->
+        <div class="ws-info-row">
+            <div class="ws-info-card">
+                <svg class="ws-info-icon" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <div class="ws-card-text">
+                    <span class="ws-label">File Size</span>
+                    <span class="ws-value">Ready (Full)</span>
+                </div>
+            </div>
+            
+            <div class="ws-vert-divider"></div>
+            
+            <div class="ws-info-card">
+                <svg class="ws-info-icon" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                <div class="ws-card-text">
+                    <span class="ws-label">Type</span>
+                    <span class="ws-value">MKV</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="ws-horiz-divider">
+
+        <!-- Date Row -->
+        <div class="ws-list-row">
+            <svg class="ws-info-icon" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <div class="ws-card-text">
+                <span class="ws-label">Date</span>
+                <span class="ws-value" id="ws-dynamic-date">12 Oct 2026</span>
+            </div>
+        </div>
+
+        <hr class="ws-horiz-divider">
+
+        <!-- Final Download Button (appears below the fold/scrollable) -->
+        <button class="ws-download-btn" id="ws-action-download">
+            <svg viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download
+        </button>
+
+    </div>
+</div>
+
+<script>
+    // Register the controller. 
+    // IMPORTANT: In your index.html router, ensure you map this to exactly 'wideshares.org'
+    // Example: routes: { ..., 'wideshares.org': 'wideshares.org.html' }
+    
+    window.pageControllers = window.pageControllers || {};
+    window.pageControllers['wideshares.org'] = {
+        init: function(container, data) {
+            
+            // Check if data was passed from a previous screen to dynamically fill it
+            if (data && data.title) {
+                const titleEl = container.querySelector('#ws-dynamic-title');
+                const imgEl = container.querySelector('#ws-dynamic-img');
+                const catEl = container.querySelector('#ws-dynamic-cat');
+                
+                if (titleEl) titleEl.innerText = data.title;
+                if (imgEl && data.img) imgEl.src = data.img;
+                
+                // Example of updating category if passed
+                if (catEl && data.categories && data.categories.length > 0) {
+                    catEl.innerText = data.categories[0];
+                }
+            }
+
+            // Download Button Logic
+            const dlBtn = container.querySelector('#ws-action-download');
+            if (dlBtn) {
+                dlBtn.addEventListener('click', () => {
+                    // Replace this with actual download logic
+                    dlBtn.innerHTML = 'Downloading...';
+                    dlBtn.style.opacity = '0.7';
+                    
+                    setTimeout(() => {
+                        dlBtn.innerHTML = `
+                            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Downloaded
+                        `;
+                        dlBtn.style.backgroundColor = '#28a745'; // Turn green on success
+                        dlBtn.style.opacity = '1';
+                    }, 1500);
+                });
+            }
+        },
+        pause: function() {},
+        resume: function(container, data) {},
+        destroy: function() {}
+    };
+</script>
